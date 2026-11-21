@@ -75,18 +75,22 @@ def issue_grid(
 
 
 def quarter_folds(
-    issues: pd.DatetimeIndex, n_folds: int
+    issues: pd.DatetimeIndex, n_folds: int, freq: str = "quarter"
 ) -> list[tuple[pd.Timestamp, pd.Timestamp]]:
-    """The last `n_folds` complete quarters of the issue grid as validation windows."""
+    """The last `n_folds` complete quarters (or months) as validation windows."""
     last = issues.max()
-    quarter_start = pd.Timestamp(
-        year=last.year, month=3 * ((last.month - 1) // 3) + 1, day=1, tz="UTC"
-    )
+    if freq == "month":
+        offset = pd.offsets.MonthBegin()
+        cursor = pd.Timestamp(year=last.year, month=last.month, day=1, tz="UTC")
+    else:
+        offset = pd.offsets.QuarterBegin(startingMonth=1)
+        cursor = pd.Timestamp(
+            year=last.year, month=3 * ((last.month - 1) // 3) + 1, day=1, tz="UTC"
+        )
     folds = []
-    cursor = quarter_start
     for _ in range(n_folds):
-        folds.append((cursor, cursor + pd.offsets.QuarterBegin(startingMonth=1)))
-        cursor = cursor - pd.offsets.QuarterBegin(startingMonth=1)
+        folds.append((cursor, cursor + offset))
+        cursor = cursor - offset
     return sorted(folds)
 
 
@@ -190,7 +194,8 @@ def load_frame(args: argparse.Namespace) -> pd.DataFrame:
     # last issue must keep its 48 h horizon strictly before train_end
     end = pd.Timestamp(args.train_end, tz="UTC") - pd.Timedelta(hours=48, minutes=30)
     issues = issue_grid(start, end, args.issue_step_h)
-    assert_outside_sealed(issues, "issue grid")
+    if not args.deployed_refit:
+        assert_outside_sealed(issues, "issue grid")
 
     weather = None
     if args.track == "B":
@@ -200,7 +205,8 @@ def load_frame(args: argparse.Namespace) -> pd.DataFrame:
     frame = features.build_training_frame(
         history, issues, holiday_dates=hol, weather_prev=weather
     )
-    assert_outside_sealed(frame["target_time"], "training targets")
+    if not args.deployed_refit:
+        assert_outside_sealed(frame["target_time"], "training targets")
     cols = features.feature_columns(frame)
     cols = [c for c in cols if c not in ("issue_time", "target_time")]
     frame[cols] = frame[cols].astype(np.float32)
@@ -214,7 +220,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--train-end", default="2025-01-01")
     parser.add_argument("--issue-step-h", type=float, default=2.0)
     parser.add_argument("--cv-folds", type=int, default=6)
+    parser.add_argument("--fold-freq", choices=["quarter", "month"], default="quarter")
     parser.add_argument("--cv", action="store_true", help="rolling-origin validation")
+    parser.add_argument(
+        "--deployed-refit",
+        action="store_true",
+        help=(
+            "post-evaluation refit on all data: skips the sealed-year guard "
+            "and tags the run; report numbers never come from such a run"
+        ),
+    )
     parser.add_argument("--final", action="store_true", help="fit on the full span")
     parser.add_argument("--tag", default=None, help="run id suffix")
     parser.add_argument("--runs-dir", default="runs")
@@ -244,6 +259,8 @@ def main(argv: list[str] | None = None) -> int:
         "train_end": args.train_end,
         "issue_step_h": args.issue_step_h,
         "cv_folds": args.cv_folds,
+        "fold_freq": args.fold_freq,
+        "deployed_refit": bool(args.deployed_refit),
         "embargo_days": EMBARGO.days,
         "quantiles": list(QUANTILES),
         "lgb_params": LGB_PARAMS,
@@ -257,7 +274,9 @@ def main(argv: list[str] | None = None) -> int:
     result: dict = {"config": config, "computed_utc": datetime.now(UTC).isoformat()}
 
     if args.cv:
-        folds = quarter_folds(pd.DatetimeIndex(frame["issue_time"]), args.cv_folds)
+        folds = quarter_folds(
+            pd.DatetimeIndex(frame["issue_time"]), args.cv_folds, args.fold_freq
+        )
         fold_rows, fold_reports = [], {}
         for fold_start, fold_end in folds:
             train = frame[frame["issue_time"] < fold_start - EMBARGO]
