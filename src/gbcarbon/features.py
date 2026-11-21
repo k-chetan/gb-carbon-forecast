@@ -120,11 +120,12 @@ def build_training_frame(
     holiday_dates: set,
     weather_prev: pd.DataFrame | None = None,
     horizons_h: np.ndarray = HORIZONS_H,
+    keep_unlabelled: bool = False,
 ) -> pd.DataFrame:
     """One row per (issue, horizon): meta columns, features, target.
 
     Row count is len(issue_times) x len(horizons_h); rows with no published
-    target actual are dropped.
+    target actual are dropped unless ``keep_unlabelled`` (inference mode).
     """
     grid = half_hour_grid(history)
     issue = issue_features(grid, issue_times)
@@ -151,7 +152,9 @@ def build_training_frame(
         wx_rows.loc[mask, day1_cols] = np.nan
         frame = pd.concat([frame, wx_rows], axis=1)
 
-    return frame.dropna(subset=["y"]).reset_index(drop=True)
+    if not keep_unlabelled:
+        frame = frame.dropna(subset=["y"])
+    return frame.reset_index(drop=True)
 
 
 def feature_columns(frame: pd.DataFrame) -> list[str]:

@@ -79,6 +79,39 @@
         "cloud_cover",
         "shortwave_radiation"
       ]
+    },
+    "weather_prev_runs": {
+      "coverage_end": "2026-11-21 23:00:00+00:00",
+      "coverage_start": "2024-02-01 00:00:00+00:00",
+      "file": "weather_prev_runs.parquet",
+      "license": "CC BY 4.0 (Open-Meteo, non-commercial tier)",
+      "note": "previous_day1 admissible for horizons <=24 h, previous_day2 for <=48 h",
+      "points": [
+        "east_anglia_offshore",
+        "england_southwest",
+        "irish_sea",
+        "london",
+        "offshore_dogger",
+        "scotland_highlands",
+        "scotland_south",
+        "wales_mid"
+      ],
+      "pulled_utc": "2026-11-21T10:47Z",
+      "rows": 196800,
+      "sha256": "b2922d98a3ab9033364a5d1617f3d173060673d5e462a137936f04bd6d044914",
+      "url": "https://previous-runs-api.open-meteo.com/v1/forecast",
+      "variables": [
+        "temperature_2m_previous_day1",
+        "temperature_2m_previous_day2",
+        "wind_speed_10m_previous_day1",
+        "wind_speed_10m_previous_day2",
+        "wind_speed_100m_previous_day1",
+        "wind_speed_100m_previous_day2",
+        "cloud_cover_previous_day1",
+        "cloud_cover_previous_day2",
+        "shortwave_radiation_previous_day1",
+        "shortwave_radiation_previous_day2"
+      ]
     }
   }
 }

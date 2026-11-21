@@ -2,6 +2,7 @@
 
 > **Probabilistic 48-hour forecasts of Great Britain's grid carbon intensity, honestly benchmarked against the grid operator's own forecasts.**
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gb-carbon-forecast-go.streamlit.app/)
 [![ci](https://github.com/k-chetan/gb-carbon-forecast/actions/workflows/ci.yml/badge.svg)](https://github.com/k-chetan/gb-carbon-forecast/actions/workflows/ci.yml)
 [![vintage-logger](https://github.com/k-chetan/gb-carbon-forecast/actions/workflows/vintage-logger.yml/badge.svg)](https://github.com/k-chetan/gb-carbon-forecast/actions/workflows/vintage-logger.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -57,6 +58,10 @@ Everything below runs unattended on GitHub Actions:
 - **watchdog** (daily): opens or updates a **PIPELINE STALE** issue when the last capture is over 6 h old or the last nightly forecast over 48 h old, closes it with a comment on recovery, and pushes a keepalive commit if capture activity ever stops for 7 days (GitHub disables crons after 60 days of repo inactivity).
 - **self-scoring** (weekly, Sun): compacts closed months of daily vintage CSVs into monthly parquet, re-scores every matured logged forecast against published actuals from scratch (idempotent), and commits `results/prospective_scores.parquet` + `results/prospective_summary.json`.
 - **ci** (push/PR): ruff + pytest.
+
+## Live app
+
+👉 **[gb-carbon-forecast-go.streamlit.app](https://gb-carbon-forecast-go.streamlit.app/)** — free-tier apps sleep when idle; the wake button takes ~30 s.
 
 ## Quick start
 
