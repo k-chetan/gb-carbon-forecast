@@ -137,13 +137,51 @@ def fit_quantiles(
 
 
 def predict_quantiles(
-    models: dict[float, lgb.LGBMRegressor], frame: pd.DataFrame, cols: list[str]
+    models: dict[float, lgb.LGBMRegressor],
+    frame: pd.DataFrame,
+    cols: list[str],
+    offsets: dict[str, float] | None = None,
 ) -> pd.DataFrame:
     preds = np.column_stack([models[q].predict(frame[cols]) for q in QUANTILES])
     preds.sort(axis=1)  # enforce non-crossing
     out = frame[["issue_time", "target_time", "horizon_h", "y"]].copy()
     out["p10"], out["p50"], out["p90"] = preds[:, 0], preds[:, 1], preds[:, 2]
+    if offsets:
+        widen = bucket_of(out["horizon_h"]).map(offsets).fillna(0.0).to_numpy()
+        out["p10"] = out["p10"] - widen
+        out["p90"] = out["p90"] + widen
     return out
+
+
+def split_calibration(
+    frame: pd.DataFrame, frac: float = 0.15
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Time-ordered core/calibration split on issue times (CQR)."""
+    issues = frame["issue_time"].sort_values().unique()
+    cut = issues[int(len(issues) * (1 - frac))]
+    return frame[frame["issue_time"] < cut], frame[frame["issue_time"] >= cut]
+
+
+def conformal_offsets(
+    models: dict[float, lgb.LGBMRegressor],
+    calib: pd.DataFrame,
+    cols: list[str],
+    alpha: float = 0.2,
+) -> dict[str, float]:
+    """Per-horizon-bucket CQR offsets: the finite-sample (1-alpha) quantile of
+    conformity scores E = max(p10 - y, y - p90) on the calibration slice."""
+    preds = predict_quantiles(models, calib, cols)
+    scores = np.maximum(preds["p10"] - preds["y"], preds["y"] - preds["p90"]).to_numpy()
+    buckets = bucket_of(preds["horizon_h"])
+    offsets: dict[str, float] = {}
+    for bucket in sorted(buckets.dropna().unique()):
+        s = np.sort(scores[(buckets == bucket).to_numpy()])
+        n = len(s)
+        if n == 0:
+            continue
+        rank = min(int(np.ceil((1 - alpha) * (n + 1))) - 1, n - 1)
+        offsets[str(bucket)] = float(s[rank])
+    return offsets
 
 
 def load_frame(args: argparse.Namespace) -> pd.DataFrame:
@@ -228,15 +266,18 @@ def main(argv: list[str] | None = None) -> int:
             ]
             if len(train) < 10_000 or len(val) == 0:
                 continue
-            models = fit_quantiles(train, cols)
-            preds = predict_quantiles(models, val, cols)
+            core, calib = split_calibration(train)
+            models = fit_quantiles(core, cols)
+            offsets = conformal_offsets(models, calib, cols)
+            preds = predict_quantiles(models, val, cols, offsets)
             preds["fold"] = str(fold_start.date())
             fold_rows.append(preds)
-            fold_reports[str(fold_start.date())] = fold_metrics(preds)
-            report = fold_reports[str(fold_start.date())]
+            report = fold_metrics(preds)
+            report["conformal_offsets"] = offsets
+            fold_reports[str(fold_start.date())] = report
             print(
                 f"fold {fold_start.date()}: {report['mae_p50']:.2f} MAE(p50) "
-                f"n={len(preds)}"
+                f"coverage80={report['coverage_80']:.3f} n={len(preds)}"
             )
         pooled = pd.concat(fold_rows, ignore_index=True)
         pooled.to_parquet(run_dir / "val_predictions.parquet", index=False)
@@ -247,10 +288,17 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     if args.final:
-        models = fit_quantiles(frame, cols)
+        core, calib = split_calibration(frame)
+        models = fit_quantiles(core, cols)
+        offsets = conformal_offsets(models, calib, cols)
         for q, model in models.items():
             model.booster_.save_model(run_dir / f"model_q{int(q * 100)}.txt")
-        result["final_fit"] = {"n": int(len(frame))}
+        (run_dir / "conformal.json").write_text(json.dumps(offsets, indent=2) + "\n")
+        result["final_fit"] = {
+            "n_core": int(len(core)),
+            "n_calib": int(len(calib)),
+            "conformal_offsets": offsets,
+        }
 
     result["duration_s"] = round(time.time() - started, 1)
     (run_dir / "run.json").write_text(json.dumps(result, indent=2) + "\n")

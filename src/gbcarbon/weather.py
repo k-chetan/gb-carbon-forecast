@@ -72,9 +72,19 @@ def pull_source(
                 "hourly": ",".join(variables),
                 "timezone": "UTC",
             }
-            resp = requests.get(url, params=params, timeout=120)
-            resp.raise_for_status()
-            hourly = resp.json()["hourly"]
+            hourly = None
+            for attempt in range(4):
+                try:
+                    resp = requests.get(url, params=params, timeout=120)
+                    resp.raise_for_status()
+                    hourly = resp.json()["hourly"]
+                    break
+                except requests.RequestException as err:
+                    if attempt == 3:
+                        raise
+                    wait = 10 * 2**attempt
+                    print(f"retry {point} {chunk_start}: {err}; waiting {wait}s")
+                    time.sleep(wait)
             frame = pd.DataFrame(hourly)
             frame.insert(0, "point", point)
             frames.append(frame)

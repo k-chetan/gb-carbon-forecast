@@ -51,6 +51,34 @@
       "rows": 157269,
       "sha256": "c5f4ad2543600a17a3bc6f30a8c1d384e6b78bcf34118926138e83426ddda43d",
       "url": "https://api.neso.energy/dataset/f406810a-1a36-48d2-b542-1dfb1348096e/resource/0e5fde43-2de7-4fb4-833d-c7bca3b658b0/download/gb_carbon_intensity.csv"
+    },
+    "weather_hist_forecast": {
+      "coverage_end": "2026-11-21 23:00:00+00:00",
+      "coverage_start": "2024-01-01 00:00:00+00:00",
+      "file": "weather_hist_forecast.parquet",
+      "license": "CC BY 4.0 (Open-Meteo, non-commercial tier)",
+      "note": "archived short-lead forecast chain; issue-time safe for nowcast-lead features",
+      "points": [
+        "east_anglia_offshore",
+        "england_southwest",
+        "irish_sea",
+        "london",
+        "offshore_dogger",
+        "scotland_highlands",
+        "scotland_south",
+        "wales_mid"
+      ],
+      "pulled_utc": "2026-11-21T10:40Z",
+      "rows": 202752,
+      "sha256": "9717db225a6867ed6c1bd4c64cfe23615329cb0854419c7a969e14a584c13345",
+      "url": "https://historical-forecast-api.open-meteo.com/v1/forecast",
+      "variables": [
+        "temperature_2m",
+        "wind_speed_10m",
+        "wind_speed_100m",
+        "cloud_cover",
+        "shortwave_radiation"
+      ]
     }
   }
 }
