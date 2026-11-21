@@ -33,14 +33,20 @@ def assess(
         problems.append("no vintage capture found in the manifest")
     else:
         age = (now - last_capture).total_seconds() / 3600
-        line = f"last vintage capture {age:.1f} h ago (threshold {max_capture_age_hours:g} h)"
+        line = (
+            f"last vintage capture {age:.1f} h ago "
+            f"(threshold {max_capture_age_hours:g} h)"
+        )
         (problems if age > max_capture_age_hours else notes).append(line)
 
     if last_forecast_issued is None:
         notes.append("nightly forecast job not live yet; forecast-age check skipped")
     else:
         age = (now - last_forecast_issued).total_seconds() / 3600
-        line = f"last forecast issued {age:.1f} h ago (threshold {max_forecast_age_hours:g} h)"
+        line = (
+            f"last forecast issued {age:.1f} h ago "
+            f"(threshold {max_forecast_age_hours:g} h)"
+        )
         (problems if age > max_forecast_age_hours else notes).append(line)
 
     return (not problems, problems + notes)
