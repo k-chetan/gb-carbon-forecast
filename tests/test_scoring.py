@@ -125,3 +125,14 @@ def test_score_filters_maturity_and_buckets():
     assert summary["neso_fw48h"]["mae_by_bucket"] == {"01_06h": 10.0, "07_24h": 20.0}
     assert summary["vintages"]["total_captures"] == 1
     assert summary["model_forecasts"]["status"] == "pending"
+
+
+def test_summarize_handles_nothing_scored_yet():
+    empty = pd.DataFrame()
+    no_vintages = pd.DataFrame(columns=scoring.VINTAGE_COLUMNS)
+    summary = scoring.summarize(empty, no_vintages, NOW)
+    assert summary["neso_fw48h"]["scored_windows"] == 0
+    assert summary["neso_fw48h"]["overall_mae"] is None
+    assert summary["neso_fw48h"]["mae_by_bucket"] == {}
+    assert summary["vintages"]["first_capture_utc"] is None
+    assert summary["vintages"]["total_captures"] == 0

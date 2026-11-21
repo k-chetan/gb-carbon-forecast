@@ -103,7 +103,13 @@ def score(vintages: pd.DataFrame, actuals: pd.DataFrame, now: datetime) -> pd.Da
 
 
 def summarize(scored: pd.DataFrame, vintages: pd.DataFrame, now: datetime) -> dict:
-    by_bucket = scored.groupby("bucket")["abs_err"]
+    if scored.empty:
+        mae_by_bucket: dict[str, float] = {}
+        n_by_bucket: dict[str, int] = {}
+    else:
+        by_bucket = scored.groupby("bucket")["abs_err"]
+        mae_by_bucket = {k: round(float(v), 2) for k, v in by_bucket.mean().items()}
+        n_by_bucket = {k: int(v) for k, v in by_bucket.count().items()}
     return {
         "updated_utc": now.strftime(neso.TS_FMT),
         "vintages": {
@@ -124,10 +130,8 @@ def summarize(scored: pd.DataFrame, vintages: pd.DataFrame, now: datetime) -> di
             "overall_mae": round(float(scored["abs_err"].mean()), 2)
             if len(scored)
             else None,
-            "mae_by_bucket": {
-                k: round(float(v), 2) for k, v in by_bucket.mean().items()
-            },
-            "n_by_bucket": {k: int(v) for k, v in by_bucket.count().items()},
+            "mae_by_bucket": mae_by_bucket,
+            "n_by_bucket": n_by_bucket,
         },
         "model_forecasts": {
             "status": "pending",
