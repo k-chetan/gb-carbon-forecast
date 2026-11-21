@@ -28,6 +28,8 @@ jobs:
           git worktree add ../vintage vintage-log
 
       - name: Compact vintages and score matured forecasts
+        env:
+          PYTHONPATH: src
         run: uv run python -m gbcarbon.scoring --vintages ../vintage/vintages --results results
 
       - name: Push vintage compaction
