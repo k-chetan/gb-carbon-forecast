@@ -1,0 +1,28 @@
+{
+  "checked_utc": "2026-11-21T10:31Z",
+  "historical_forecast_api": {
+    "cloud_cover": "2016-12-31",
+    "shortwave_radiation": "2017-01-01",
+    "temperature_2m": "2017-01-01",
+    "wind_speed_100m": "2017-01-02",
+    "wind_speed_10m": "2017-01-02"
+  },
+  "method": "coarse date scan + day-level bisection, >=90% non-null hourly values",
+  "model": "best_match (API default)",
+  "previous_runs_api": {
+    "cloud_cover_previous_day1": "2024-02-04",
+    "cloud_cover_previous_day2": "2024-02-27",
+    "shortwave_radiation_previous_day1": "2024-03-22",
+    "shortwave_radiation_previous_day2": "2024-03-14",
+    "temperature_2m_previous_day1": "2024-02-05",
+    "temperature_2m_previous_day2": "2024-02-05",
+    "wind_speed_100m_previous_day1": "2024-03-10",
+    "wind_speed_100m_previous_day2": "2024-03-08",
+    "wind_speed_10m_previous_day1": "2024-03-22",
+    "wind_speed_10m_previous_day2": "2024-02-05"
+  },
+  "probe_point": {
+    "latitude": 55.0,
+    "longitude": -3.0
+  }
+}
