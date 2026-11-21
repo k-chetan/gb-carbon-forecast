@@ -2,9 +2,11 @@ name: vintage-logger
 
 on:
   schedule:
-    # :17 keeps clear of the top-of-the-hour queue, where load-shedding
-    # drops the most scheduled jobs
+    # two entries per hour because GitHub's scheduler is best-effort and
+    # drops occurrences; both keep clear of the congested top of the hour.
+    # If both fire the record is simply denser, which scoring absorbs.
     - cron: "17 * * * *"
+    - cron: "47 * * * *"
   workflow_dispatch:
     inputs:
       simulate_failure:
