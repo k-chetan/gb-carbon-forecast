@@ -1,15 +1,19 @@
 {
   "model_forecasts": {
-    "detail": "nightly forecast job not live yet",
+    "detail": "no matured model forecasts yet",
     "status": "pending"
   },
   "neso_fw48h": {
-    "mae_by_bucket": {},
-    "n_by_bucket": {},
-    "overall_mae": null,
-    "scored_windows": 0
+    "mae_by_bucket": {
+      "01_06h": 16.5
+    },
+    "n_by_bucket": {
+      "01_06h": 4
+    },
+    "overall_mae": 16.5,
+    "scored_windows": 4
   },
-  "updated_utc": "2026-11-21T10:14Z",
+  "updated_utc": "2026-11-21T12:02Z",
   "vintages": {
     "first_capture_utc": "2026-11-21T10:05Z",
     "last_capture_utc": "2026-11-21T10:11Z",
