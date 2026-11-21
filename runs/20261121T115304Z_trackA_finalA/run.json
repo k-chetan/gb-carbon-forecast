@@ -1,0 +1,69 @@
+{
+  "config": {
+    "run_id": "20261121T115304Z_trackA_finalA",
+    "track": "A",
+    "train_start": "2018-01-01",
+    "train_end": "2025-01-01",
+    "issue_step_h": 2.0,
+    "cv_folds": 6,
+    "fold_freq": "quarter",
+    "deployed_refit": false,
+    "conformal_mode": "additive",
+    "embargo_days": 7,
+    "quantiles": [
+      0.1,
+      0.5,
+      0.9
+    ],
+    "lgb_params": {
+      "n_estimators": 600,
+      "learning_rate": 0.05,
+      "num_leaves": 127,
+      "min_child_samples": 100,
+      "subsample": 0.9,
+      "subsample_freq": 1,
+      "colsample_bytree": 0.9,
+      "random_state": 42,
+      "verbose": -1
+    },
+    "n_samples": 2924064,
+    "n_features": 20,
+    "features": [
+      "lag_0h",
+      "lag_1h",
+      "lag_2h",
+      "lag_3h",
+      "lag_6h",
+      "lag_12h",
+      "lag_24h",
+      "lag_48h",
+      "lag_7d",
+      "roll_24h",
+      "roll_7d",
+      "trend_24h",
+      "horizon_h",
+      "t_hour_sin",
+      "t_hour_cos",
+      "t_hour",
+      "t_dow",
+      "t_month",
+      "t_doy",
+      "t_holiday"
+    ],
+    "git_hash": "48f889638ce6aeb8aa1ecd1fa1dd0899aec3f166",
+    "seed": 42
+  },
+  "computed_utc": "2026-11-21T11:53:10.156858+00:00",
+  "final_fit": {
+    "n": 2924064,
+    "conformal_offsets": {
+      "mode": "additive",
+      "offsets": {
+        "01_06h": 6.604358621104424,
+        "07_24h": 14.385016707131001,
+        "25_48h": 19.8771803910154
+      }
+    }
+  },
+  "duration_s": 100.0
+}

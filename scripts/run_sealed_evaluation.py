@@ -29,6 +29,7 @@ from gbcarbon import conformal, evaluate, features  # noqa: E402
 from gbcarbon.train import fold_metrics, gb_holiday_dates, issue_grid  # noqa: E402
 
 SEALED_DIR = Path("results/sealed")
+WORK_DIR = Path("results/.sealed_tmp")  # built here, renamed atomically at the end
 
 
 def main() -> int:
@@ -94,8 +95,12 @@ def main() -> int:
         base, on=["issue_time", "target_time", "horizon_h", "y"], how="left"
     )
 
-    SEALED_DIR.mkdir(parents=True)
-    merged.to_parquet(SEALED_DIR / "sealed_predictions.parquet", index=False)
+    if WORK_DIR.exists():
+        import shutil
+
+        shutil.rmtree(WORK_DIR)
+    WORK_DIR.mkdir(parents=True)
+    merged.to_parquet(WORK_DIR / "sealed_predictions.parquet", index=False)
 
     curve = evaluate.horizon_curve(
         merged,
@@ -107,7 +112,7 @@ def main() -> int:
             "neso_stored_leg1": "neso_stored",
         },
     )
-    curve.to_parquet(SEALED_DIR / "horizon_curves.parquet", index=False)
+    curve.to_parquet(WORK_DIR / "horizon_curves.parquet", index=False)
 
     def errs(col: str) -> np.ndarray:
         return (merged[col] - merged["y"]).abs().to_numpy()
@@ -158,7 +163,8 @@ def main() -> int:
         "comparisons": comparisons,
         "frozen": True,
     }
-    (SEALED_DIR / "sealed_2025.json").write_text(json.dumps(payload, indent=2) + "\n")
+    (WORK_DIR / "sealed_2025.json").write_text(json.dumps(payload, indent=2) + "\n")
+    WORK_DIR.rename(SEALED_DIR)  # atomic: sealed exists only when complete
 
     print(
         json.dumps(

@@ -1,0 +1,93 @@
+{
+  "config": {
+    "run_id": "20261121T115450Z_trackB_finalB",
+    "track": "B",
+    "train_start": "2024-04-01",
+    "train_end": "2025-01-01",
+    "issue_step_h": 1.0,
+    "cv_folds": 6,
+    "fold_freq": "quarter",
+    "deployed_refit": false,
+    "conformal_mode": "additive",
+    "embargo_days": 7,
+    "quantiles": [
+      0.1,
+      0.5,
+      0.9
+    ],
+    "lgb_params": {
+      "n_estimators": 600,
+      "learning_rate": 0.05,
+      "num_leaves": 127,
+      "min_child_samples": 100,
+      "subsample": 0.9,
+      "subsample_freq": 1,
+      "colsample_bytree": 0.9,
+      "random_state": 42,
+      "verbose": -1
+    },
+    "n_samples": 627504,
+    "n_features": 44,
+    "features": [
+      "lag_0h",
+      "lag_1h",
+      "lag_2h",
+      "lag_3h",
+      "lag_6h",
+      "lag_12h",
+      "lag_24h",
+      "lag_48h",
+      "lag_7d",
+      "roll_24h",
+      "roll_7d",
+      "trend_24h",
+      "horizon_h",
+      "t_hour_sin",
+      "t_hour_cos",
+      "t_hour",
+      "t_dow",
+      "t_month",
+      "t_doy",
+      "t_holiday",
+      "wind100_previous_day1_east_anglia_offshore",
+      "wind100_previous_day1_england_southwest",
+      "wind100_previous_day1_irish_sea",
+      "wind100_previous_day1_london",
+      "wind100_previous_day1_offshore_dogger",
+      "wind100_previous_day1_scotland_highlands",
+      "wind100_previous_day1_scotland_south",
+      "wind100_previous_day1_wales_mid",
+      "temperature_2m_mean_previous_day1",
+      "wind_speed_10m_mean_previous_day1",
+      "cloud_cover_mean_previous_day1",
+      "shortwave_radiation_mean_previous_day1",
+      "wind100_previous_day2_east_anglia_offshore",
+      "wind100_previous_day2_england_southwest",
+      "wind100_previous_day2_irish_sea",
+      "wind100_previous_day2_london",
+      "wind100_previous_day2_offshore_dogger",
+      "wind100_previous_day2_scotland_highlands",
+      "wind100_previous_day2_scotland_south",
+      "wind100_previous_day2_wales_mid",
+      "temperature_2m_mean_previous_day2",
+      "wind_speed_10m_mean_previous_day2",
+      "cloud_cover_mean_previous_day2",
+      "shortwave_radiation_mean_previous_day2"
+    ],
+    "git_hash": "48f889638ce6aeb8aa1ecd1fa1dd0899aec3f166",
+    "seed": 42
+  },
+  "computed_utc": "2026-11-21T11:54:53.733498+00:00",
+  "final_fit": {
+    "n": 627504,
+    "conformal_offsets": {
+      "mode": "additive",
+      "offsets": {
+        "01_06h": 0.9184469502669685,
+        "07_24h": 0.7393469571330797,
+        "25_48h": 1.1520951611865655
+      }
+    }
+  },
+  "duration_s": 65.9
+}
