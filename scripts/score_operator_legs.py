@@ -47,6 +47,8 @@ def model_predictions_at(
     frame = features.build_training_frame(
         history, issues, holiday_dates=hol, weather_prev=weather
     )
+    if frame.empty:  # nothing matured yet at these issue times
+        return {name: pd.DataFrame() for name in bundles}
     return {
         name: conformal.apply_trailing(
             bundle.predict(frame, calibrate=False),
@@ -79,6 +81,11 @@ def leg_rows(
         "comparisons": [],
     }
     for name, model_preds in preds.items():
+        if model_preds.empty:
+            out["comparisons"].append(
+                {"model": name, "n": 0, "note": "nothing matured yet"}
+            )
+            continue
         joined = evaluate.score_against_vintages(
             model_preds, vintages, MATCH_TOLERANCE
         ).dropna(subset=["operator_vintage", "y"])
