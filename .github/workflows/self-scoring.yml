@@ -2,6 +2,7 @@ name: self-scoring
 
 on:
   schedule:
+    # Sundays 03:40 UTC: a quiet slot, and the week's captures have matured
     - cron: "40 3 * * 0"
   workflow_dispatch:
 

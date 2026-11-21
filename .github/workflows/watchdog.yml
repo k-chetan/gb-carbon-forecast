@@ -2,6 +2,8 @@ name: watchdog
 
 on:
   schedule:
+    # daily, after the nightly forecast (03:07) and the Sunday scoring
+    # (03:40) have had time to finish
     - cron: "41 5 * * *"
   workflow_dispatch:
     inputs:

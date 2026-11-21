@@ -2,6 +2,8 @@ name: vintage-logger
 
 on:
   schedule:
+    # :17 keeps clear of the top-of-the-hour queue, where load-shedding
+    # drops the most scheduled jobs
     - cron: "17 * * * *"
   workflow_dispatch:
     inputs:

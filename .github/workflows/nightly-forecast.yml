@@ -2,6 +2,8 @@ name: nightly-forecast
 
 on:
   schedule:
+    # 03:07 UTC: yesterday's actuals are published and the previous-day
+    # weather runs cover the full 48 h span
     - cron: "7 3 * * *"
   workflow_dispatch:
 
