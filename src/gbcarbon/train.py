@@ -140,6 +140,30 @@ def fit_quantiles(
     return models
 
 
+def fit_models(
+    full: pd.DataFrame, cols: list[str], calib_frac: float = 0.15
+) -> tuple[dict[float, lgb.LGBMRegressor], dict[str, float]]:
+    """Median on the full window; interval heads on the core, CQR on the tail.
+
+    CQR only recalibrates p10/p90, so the median may use every sample —
+    holding the freshest slice out of the p50 fit measurably hurts it under
+    distribution shift. The interval heads are fit on the core and their
+    conformity scores come from the held-out tail, keeping the conformal
+    guarantee intact.
+    """
+    core, calib = split_calibration(full, calib_frac)
+    models: dict[float, lgb.LGBMRegressor] = {}
+    for q in (0.1, 0.9):
+        model = lgb.LGBMRegressor(objective="quantile", alpha=q, **LGB_PARAMS)
+        model.fit(core[cols], core["y"])
+        models[q] = model
+    median = lgb.LGBMRegressor(objective="quantile", alpha=0.5, **LGB_PARAMS)
+    median.fit(full[cols], full["y"])
+    models[0.5] = median
+    offsets = conformal_offsets(models, calib, cols)
+    return models, offsets
+
+
 def predict_quantiles(
     models: dict[float, lgb.LGBMRegressor],
     frame: pd.DataFrame,
@@ -285,9 +309,7 @@ def main(argv: list[str] | None = None) -> int:
             ]
             if len(train) < 10_000 or len(val) == 0:
                 continue
-            core, calib = split_calibration(train)
-            models = fit_quantiles(core, cols)
-            offsets = conformal_offsets(models, calib, cols)
+            models, offsets = fit_models(train, cols)
             preds = predict_quantiles(models, val, cols, offsets)
             preds["fold"] = str(fold_start.date())
             fold_rows.append(preds)
@@ -307,15 +329,12 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     if args.final:
-        core, calib = split_calibration(frame)
-        models = fit_quantiles(core, cols)
-        offsets = conformal_offsets(models, calib, cols)
+        models, offsets = fit_models(frame, cols)
         for q, model in models.items():
             model.booster_.save_model(run_dir / f"model_q{int(q * 100)}.txt")
         (run_dir / "conformal.json").write_text(json.dumps(offsets, indent=2) + "\n")
         result["final_fit"] = {
-            "n_core": int(len(core)),
-            "n_calib": int(len(calib)),
+            "n": int(len(frame)),
             "conformal_offsets": offsets,
         }
 
