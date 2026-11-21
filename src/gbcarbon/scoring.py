@@ -140,6 +140,54 @@ def summarize(scored: pd.DataFrame, vintages: pd.DataFrame, now: datetime) -> di
     }
 
 
+def load_model_forecasts(forecast_dir: Path) -> pd.DataFrame:
+    """All dated nightly forecasts (this project's own vintages)."""
+    rows = []
+    for path in sorted((forecast_dir / "history").glob("*.json")):
+        payload = json.loads(path.read_text())
+        issued = payload["issued_utc"]
+        for w in payload["windows"]:
+            rows.append((issued, w["start"], w["p10"], w["p50"], w["p90"]))
+    df = pd.DataFrame(rows, columns=["issued_utc", "window_start", "p10", "p50", "p90"])
+    if df.empty:
+        return df
+    df["issued_utc"] = pd.to_datetime(
+        df["issued_utc"], format="%Y-%m-%dT%H:%MZ", utc=True
+    )
+    df["window_start"] = pd.to_datetime(
+        df["window_start"], format="%Y-%m-%dT%H:%MZ", utc=True
+    )
+    return df.drop_duplicates(subset=["issued_utc", "window_start"])
+
+
+def score_model(forecasts: pd.DataFrame, actuals: pd.DataFrame) -> pd.DataFrame:
+    df = forecasts.merge(actuals, on="window_start", how="inner")
+    df["horizon_h"] = (df["window_start"] - df["issued_utc"]).dt.total_seconds() / 3600
+    df["bucket"] = df["horizon_h"].map(horizon_bucket)
+    df = df.dropna(subset=["bucket"])
+    df["abs_err"] = (df["p50"] - df["actual"]).abs()
+    df["covered_80"] = (df["actual"] >= df["p10"]) & (df["actual"] <= df["p90"])
+    return df.reset_index(drop=True)
+
+
+def summarize_model(scored: pd.DataFrame) -> dict:
+    if scored.empty:
+        return {"status": "pending", "detail": "no matured model forecasts yet"}
+    grp = scored.groupby("bucket")
+    return {
+        "status": "live",
+        "scored_windows": int(len(scored)),
+        "n_forecasts": int(scored["issued_utc"].nunique()),
+        "overall_mae": round(float(scored["abs_err"].mean()), 2),
+        "mae_by_bucket": {
+            k: round(float(v), 2) for k, v in grp["abs_err"].mean().items()
+        },
+        "coverage80_by_bucket": {
+            k: round(float(v), 3) for k, v in grp["covered_80"].mean().items()
+        },
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--vintages", required=True, help="vintages directory")
@@ -156,15 +204,36 @@ def main(argv: list[str] | None = None) -> int:
         print(f"compacted -> {path}")
 
     vintages = load_vintages(vintage_dir)
+    model_forecasts = load_model_forecasts(Path("forecasts"))
+
+    starts = [
+        df["window_start"].min() for df in (vintages, model_forecasts) if not df.empty
+    ]
+    actuals = (
+        fetch_actuals(min(starts).to_pydatetime(), now)
+        if starts
+        else pd.DataFrame(columns=["window_start", "actual"])
+    )
+
     if vintages.empty:
         scored = pd.DataFrame()
         print("no vintages to score yet")
     else:
-        actuals = fetch_actuals(vintages["window_start"].min().to_pydatetime(), now)
         scored = score(vintages, actuals, now)
         scored.to_parquet(results_dir / "prospective_scores.parquet", index=False)
 
     summary = summarize(scored, vintages, now)
+
+    model_scored = (
+        score_model(model_forecasts[model_forecasts["window_start"] < now], actuals)
+        if not model_forecasts.empty
+        else pd.DataFrame()
+    )
+    if not model_scored.empty:
+        model_scored.to_parquet(
+            results_dir / "prospective_model_scores.parquet", index=False
+        )
+    summary["model_forecasts"] = summarize_model(model_scored)
     out = results_dir / "prospective_summary.json"
     out.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
     print(json.dumps(summary["neso_fw48h"], indent=2))

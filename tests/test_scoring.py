@@ -127,6 +127,56 @@ def test_score_filters_maturity_and_buckets():
     assert summary["model_forecasts"]["status"] == "pending"
 
 
+def test_model_forecast_loading_and_scoring(tmp_path):
+    history_dir = tmp_path / "history"
+    history_dir.mkdir()
+    payload = {
+        "schema_version": "1.0",
+        "issued_utc": "2026-11-20T03:07Z",
+        "model": "test",
+        "windows": [
+            {
+                "start": "2026-11-20T05:00Z",
+                "end": "2026-11-20T05:30Z",
+                "p10": 90.0,
+                "p50": 100.0,
+                "p90": 110.0,
+            },
+            {
+                "start": "2026-11-21T05:00Z",
+                "end": "2026-11-21T05:30Z",
+                "p10": 80.0,
+                "p50": 95.0,
+                "p90": 112.0,
+            },
+        ],
+    }
+    import json as json_mod
+
+    (history_dir / "a.json").write_text(json_mod.dumps(payload))
+
+    forecasts = scoring.load_model_forecasts(tmp_path)
+    assert len(forecasts) == 2
+
+    actuals = pd.DataFrame(
+        {
+            "window_start": pd.to_datetime(
+                ["2026-11-20T05:00Z", "2026-11-21T05:00Z"], utc=True
+            ),
+            "actual": [105.0, 130.0],
+        }
+    )
+    scored = scoring.score_model(forecasts, actuals)
+    assert scored["bucket"].tolist() == ["01_06h", "25_48h"]
+    assert scored["abs_err"].tolist() == [5.0, 35.0]
+    assert scored["covered_80"].tolist() == [True, False]
+
+    summary = scoring.summarize_model(scored)
+    assert summary["status"] == "live"
+    assert summary["n_forecasts"] == 1
+    assert summary["coverage80_by_bucket"]["25_48h"] == 0.0
+
+
 def test_summarize_handles_nothing_scored_yet():
     empty = pd.DataFrame()
     no_vintages = pd.DataFrame(columns=scoring.VINTAGE_COLUMNS)
