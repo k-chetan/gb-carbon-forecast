@@ -1,0 +1,33 @@
+{
+  "entries": {
+    "community_vintages": {
+      "file": "data/external/community_vintages.parquet",
+      "license": "MIT (archive); underlying data NESO CC BY 4.0",
+      "months": [
+        "2023-03",
+        "2023-04",
+        "2023-05",
+        "2023-06",
+        "2023-07",
+        "2023-08",
+        "2023-09",
+        "2023-10",
+        "2023-11",
+        "2023-12",
+        "2024-01",
+        "2024-02",
+        "2026-07",
+        "2026-08",
+        "2026-09",
+        "2026-10",
+        "2026-11"
+      ],
+      "pulled_utc": "2026-11-21T10:19Z",
+      "role": "Leg 2: operator vintages on archive-covered months (no 2025)",
+      "rows": 661701,
+      "sha256": "520c0bbedaa60dcb9f65838f077487cc3fcf0f2d4fea97be09ccc0622ece3fa0",
+      "source_commit": "e79b24fc8340670d0d0aec6c0f0ac529789f9dbb",
+      "url": "https://github.com/nmpowell/carbon-intensity-forecast-tracking"
+    }
+  }
+}

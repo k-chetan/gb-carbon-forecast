@@ -1,0 +1,180 @@
+{
+  "built_utc": "2026-11-21T10:19Z",
+  "filters": "hourly capture subsample (minute < 30); horizons 0 < h <= 48 h",
+  "full_resolution_note": "re-run this script without the subsample for 30-min cadence",
+  "months": {
+    "2023-03": {
+      "capture_gaps_over_2h": 2,
+      "captures": 655,
+      "first_capture": "2023-03-14T03:00Z",
+      "largest_gap_h": 34.5,
+      "last_capture": "2023-03-30T16:30Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 90959
+    },
+    "2023-04": {
+      "capture_gaps_over_2h": 4,
+      "captures": 1237,
+      "first_capture": "2023-03-30T01:30Z",
+      "largest_gap_h": 103.0,
+      "last_capture": "2023-05-01T23:30Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 150005
+    },
+    "2023-05": {
+      "capture_gaps_over_2h": 4,
+      "captures": 1394,
+      "first_capture": "2023-04-29T01:30Z",
+      "largest_gap_h": 24.0,
+      "last_capture": "2023-06-01T23:30Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 181698
+    },
+    "2023-06": {
+      "capture_gaps_over_2h": 8,
+      "captures": 1451,
+      "first_capture": "2023-05-30T01:30Z",
+      "largest_gap_h": 2.5,
+      "last_capture": "2023-07-01T23:30Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 189020
+    },
+    "2023-07": {
+      "capture_gaps_over_2h": 7,
+      "captures": 1497,
+      "first_capture": "2023-06-29T00:30Z",
+      "largest_gap_h": 3.5,
+      "last_capture": "2023-08-01T23:30Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 196063
+    },
+    "2023-08": {
+      "capture_gaps_over_2h": 0,
+      "captures": 1512,
+      "first_capture": "2023-07-30T01:30Z",
+      "largest_gap_h": 2.0,
+      "last_capture": "2023-09-01T23:30Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 198614
+    },
+    "2023-09": {
+      "capture_gaps_over_2h": 16,
+      "captures": 1307,
+      "first_capture": "2023-08-30T01:00Z",
+      "largest_gap_h": 13.0,
+      "last_capture": "2023-10-01T18:30Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 176850
+    },
+    "2023-10": {
+      "capture_gaps_over_2h": 12,
+      "captures": 1358,
+      "first_capture": "2023-09-29T01:00Z",
+      "largest_gap_h": 22.5,
+      "last_capture": "2023-11-01T23:30Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 173026
+    },
+    "2023-11": {
+      "capture_gaps_over_2h": 0,
+      "captures": 1438,
+      "first_capture": "2023-10-30T01:00Z",
+      "largest_gap_h": 2.0,
+      "last_capture": "2023-12-01T23:30Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 188072
+    },
+    "2023-12": {
+      "capture_gaps_over_2h": 0,
+      "captures": 1471,
+      "first_capture": "2023-11-29T01:30Z",
+      "largest_gap_h": 2.0,
+      "last_capture": "2024-01-01T23:30Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 193346
+    },
+    "2024-01": {
+      "capture_gaps_over_2h": 0,
+      "captures": 1465,
+      "first_capture": "2023-12-30T01:00Z",
+      "largest_gap_h": 2.0,
+      "last_capture": "2024-02-01T23:30Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 191952
+    },
+    "2024-02": {
+      "capture_gaps_over_2h": 0,
+      "captures": 202,
+      "first_capture": "2024-01-30T01:00Z",
+      "largest_gap_h": 2.0,
+      "last_capture": "2024-02-03T13:30Z",
+      "median_windows_per_capture": 109.5,
+      "null_forecast_rows": 0,
+      "rows": 19481
+    },
+    "2026-07": {
+      "capture_gaps_over_2h": 38,
+      "captures": 211,
+      "first_capture": "2026-07-17T19:30Z",
+      "largest_gap_h": 4.0,
+      "last_capture": "2026-08-01T23:00Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 27233
+    },
+    "2026-08": {
+      "capture_gaps_over_2h": 62,
+      "captures": 586,
+      "first_capture": "2026-07-30T01:00Z",
+      "largest_gap_h": 12.0,
+      "last_capture": "2026-09-01T23:30Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 79959
+    },
+    "2026-09": {
+      "capture_gaps_over_2h": 182,
+      "captures": 234,
+      "first_capture": "2026-08-30T05:30Z",
+      "largest_gap_h": 8.0,
+      "last_capture": "2026-10-01T20:00Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 29563
+    },
+    "2026-10": {
+      "capture_gaps_over_2h": 175,
+      "captures": 203,
+      "first_capture": "2026-09-29T05:30Z",
+      "largest_gap_h": 10.0,
+      "last_capture": "2026-11-01T22:30Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 26818
+    },
+    "2026-11": {
+      "capture_gaps_over_2h": 86,
+      "captures": 99,
+      "first_capture": "2026-10-30T02:30Z",
+      "largest_gap_h": 10.5,
+      "last_capture": "2026-11-20T23:00Z",
+      "median_windows_per_capture": 144.0,
+      "null_forecast_rows": 0,
+      "rows": 13187
+    }
+  },
+  "source_commit": "e79b24fc8340670d0d0aec6c0f0ac529789f9dbb",
+  "source_license": "MIT (c) 2023 Nick Powell",
+  "source_repo": "https://github.com/nmpowell/carbon-intensity-forecast-tracking"
+}
