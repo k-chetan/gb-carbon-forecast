@@ -5,8 +5,8 @@ matched issue times on 2026-07 onward (out-of-sample for models trained
 through 2024; the archive's 2023-2024 months instead yield the operator's own
 horizon curve as context).
 
-Leg 3: the same models vs this repo's own hourly fw48h vintages — the only
-fully clean 48 h comparison; n starts tiny and matures unattended.
+Leg 3: the same models vs this repo's own hourly fw48h vintages. The sample
+starts near zero and grows as the logger runs.
 
 Unlike the sealed run, this script is MEANT to be re-run (weekly self-scoring
 summarizes continuously; `make refresh` re-runs this before submission).
@@ -106,7 +106,7 @@ def leg_rows(
                     "n": int(len(joined)),
                     "mae_a": round(float(err_model.mean()), 2),
                     "mae_b": round(float(err_op.mean()), 2),
-                    "note": "n too small for block inference; matures unattended",
+                    "note": "n too small for block inference yet",
                 }
             ]
         out["comparisons"].append({"model": name, "rows": rows})
@@ -177,8 +177,8 @@ def main() -> int:
                 "out-of-sample for models trained through 2024; no 2025 archive"
             ),
             "leg3": (
-                "own hourly fw48h log: the only fully clean 48 h comparison; "
-                "tiny n at build time, matures unattended"
+                "own hourly fw48h log, scored at matched issue times; "
+                "the sample starts near zero and grows as the logger runs"
             ),
         },
     }

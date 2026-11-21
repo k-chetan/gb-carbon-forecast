@@ -5,10 +5,10 @@ Track B: Track A plus issue-admissible archived weather forecasts, on the
 archive-covered window.
 
 Validation is rolling-origin with a 7-day embargo before each validation
-quarter; development never touches the sealed year (2025), enforced by a hard
-date assertion, not convention. Each run writes runs/<id>/run.json (config,
-per-fold and pooled metrics) plus per-fold validation predictions for paired
-significance tests.
+window. A date assertion stops any run whose issues or targets touch the
+sealed year (2025). Each run writes runs/<id>/run.json (config, per-fold and
+pooled metrics) plus per-fold validation predictions for paired significance
+tests.
 
 Example:
     PYTHONPATH=src uv run python -m gbcarbon.train --track A --cv
@@ -165,8 +165,8 @@ def predict_quantiles(
 ) -> pd.DataFrame:
     preds = np.column_stack([models[q].predict(frame[cols]) for q in QUANTILES])
     out = frame[["issue_time", "target_time", "horizon_h", "y"]].copy()
-    # non-crossing by clipping the interval heads to the median — never by
-    # sorting, which silently swaps heads trained on different windows
+    # resolve quantile crossing by clipping the interval heads to the median;
+    # sorting would swap heads trained on different windows
     p50 = preds[:, 1]
     out["p10"] = np.minimum(preds[:, 0], p50)
     out["p50"] = p50

@@ -1,4 +1,4 @@
-"""THE sealed-test run: calendar 2025, scored exactly once.
+"""The sealed-test run: calendar 2025, scored once.
 
 Refuses to run if results/sealed already exists. Hourly issue grid over 2025,
 96 half-hour horizons; Track A and Track B final models (quantile heads +

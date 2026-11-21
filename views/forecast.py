@@ -81,8 +81,8 @@ def show() -> None:
             "Region",
             list(REGIONS),
             label_visibility="collapsed",
-            help="Regional values are the operator's forecasts, shown for "
-            "context only; they are never evaluated or used in training.",
+            help="Regional values are NESO's own forecasts. There are no "
+            "published regional actuals, so these are display-only.",
         )
     region_id = REGIONS[region]
 
@@ -185,20 +185,19 @@ def show() -> None:
 
     if region_id is None and model is not None:
         st.caption(
-            f"Model forecast issued {model.attrs['issued_utc']} by "
-            f"`{model.attrs['model']}` · NESO forward forecast issued {issued_op} "
-            "(displayed, not evaluated here). Attributed emissions under stated "
-            "assumptions, not metered or marginal."
+            f"Model forecast issued {model.attrs['issued_utc']} "
+            f"({model.attrs['model']}). NESO's forward forecast (dashed) issued "
+            f"{issued_op}, shown for comparison. Values are attributed emissions "
+            "under NESO's methodology, not metered or marginal."
         )
     elif region_id is None:
         st.caption(
-            f"NESO forward forecast issued {issued_op}. The model's "
-            "probabilistic forecast appears here once the nightly job starts "
-            "publishing."
+            f"NESO forward forecast issued {issued_op}. The model forecast will "
+            "appear here once the nightly job starts publishing."
         )
     else:
         st.caption(
-            f"Regional series are the operator's own forecasts (issued "
-            f"{issued_op}); no published regional actuals exist, so they are "
-            "display-only and never scored."
+            f"Regional series are NESO's own forecasts (issued {issued_op}). "
+            "There are no published regional actuals, so these are display-only "
+            "and not scored."
         )

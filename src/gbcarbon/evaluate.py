@@ -1,19 +1,18 @@
 """Sealed-test evaluation and the three-leg operator comparison.
 
-The sealed year (calendar 2025) is scored exactly once: this module refuses
-to run if ``results/sealed`` already exists. Everything is evaluated under
-one issue-time protocol — hourly issues, 96 half-hour horizons — with
-baselines computed on the identical (issue, target) pairs:
+The sealed year (calendar 2025) is scored once; the sealed script refuses to
+run if ``results/sealed`` already exists. Everything is evaluated under one
+issue-time protocol (hourly issues, 96 half-hour horizons), with baselines
+computed on the identical (issue, target) pairs:
 
 - Track A / Track B final models (quantile heads + conformal offsets).
 - Persistence under the protocol (lag 24 h for horizons <= 24 h, else 48 h)
   and the 7-day seasonal naive.
-- Leg 1: NESO's stored forecast series — a near-final, short-horizon product,
-  labeled as such; not like-for-like at 48 h.
-- Leg 2: archive vintages (community archive) at matched issue times, on
-  months where both the archive and an out-of-sample model exist.
-- Leg 3: this repo's own logged fw48h vintages — the only fully clean 48 h
-  comparison; tiny n at build time, maturing unattended.
+- Leg 1: NESO's stored forecast series. Near-final and short-horizon, so it
+  is labelled context rather than a 48 h baseline.
+- Leg 2: community-archive vintages at matched issue times, on months where
+  both the archive and an out-of-sample model exist.
+- Leg 3: this repo's own logged fw48h vintages, which accumulate over time.
 """
 
 from __future__ import annotations

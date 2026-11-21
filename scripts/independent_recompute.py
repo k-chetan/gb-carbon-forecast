@@ -1,7 +1,8 @@
 """Independent recomputation of headline numbers (verification gate).
 
-Fresh code on purpose: this script imports nothing from ``gbcarbon`` and
-rebuilds everything it checks from raw artifacts with its own implementation.
+This script deliberately imports nothing from ``gbcarbon``. It rebuilds
+everything it checks from the raw artifacts with its own implementation, so
+a bug shared with the pipeline cannot hide.
 
 Checks:
   A. Feature/prediction equivalence — for a seeded random sample of sealed

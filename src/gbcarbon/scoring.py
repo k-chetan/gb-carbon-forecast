@@ -3,8 +3,8 @@
 Weekly job: compacts closed months of daily vintage CSVs into monthly parquet,
 scores every matured (window closed, actual published) logged forecast by
 horizon, and writes ``results/prospective_scores.parquet`` plus a summary JSON
-the app reads. Each run is a full recompute from the raw vintages, so the job
-is idempotent and a missed week self-heals on the next run.
+the app reads. Each run recomputes everything from the raw vintages, so a
+missed week is simply corrected by the next run.
 """
 
 from __future__ import annotations

@@ -1,22 +1,21 @@
-"""Issue-time feature construction with enforced availability.
+"""Issue-time feature construction with availability rules.
 
-The frame is built per (issue_time T, horizon h) sample, target y(T+h).
-Every feature is derived under an admissibility rule — a value may enter a
-sample only if it was available at T — enforced structurally here, not by
-convention:
+The frame is built per (issue_time T, horizon h) sample, with target y(T+h).
+A value may enter a sample only if it was available at T, and the rules live
+in this module rather than in documentation:
 
 - Lag and rolling features are computed on the series up to T only (shifts
   on the issue grid).
-- Calendar features of the target time are deterministic, hence always
-  admissible.
-- Weather values at the target time come from archived forecast runs:
+- Calendar features of the target time are deterministic, so always
+  available.
+- Weather values at the target time come from archived forecast runs.
   ``*_previous_day2`` (issued ~48 h before validity) is admissible at every
-  horizon up to 48 h; ``*_previous_day1`` (issued ~24 h before validity) only
-  for horizons up to 24 h and is masked to NaN beyond — LightGBM treats NaN
-  natively.
+  horizon up to 48 h. ``*_previous_day1`` (issued ~24 h before validity) is
+  admissible only for horizons up to 24 h and is set to NaN beyond that,
+  which LightGBM handles natively.
 
-tests/test_leakage.py poisons all values strictly after each issue time and
-asserts the built features do not change.
+tests/test_leakage.py corrupts all values after each issue time and checks
+that the built features do not change.
 """
 
 from __future__ import annotations

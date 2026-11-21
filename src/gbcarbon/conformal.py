@@ -1,12 +1,12 @@
 """Trailing-window conformal calibration of forecast intervals.
 
-Static split-conformal offsets decay under regime shift: conformity scores
-from a fixed calibration tail systematically underestimate errors a month
-later, which collapsed interval coverage in development. The remedy here
-recalibrates per issue time from *matured* forecasts only — pairs whose
-target time precedes the issue — so it is strictly admissible under the
-issue-time protocol and mirrors what the deployed nightly system does with
-its self-scored history.
+Static split-conformal offsets go stale when the weather regime shifts:
+conformity scores from a fixed calibration tail underestimate errors a month
+later, which showed up as poor interval coverage during development. The
+version here recalibrates per issue time from matured forecasts only (pairs
+whose target time is before the issue), so it only uses information that was
+available at issue time. The deployed nightly job can do the same thing with
+its own scored history.
 
 Per horizon bucket b and issue day d, the additive offset is the
 finite-sample (1 - alpha) quantile of conformity scores

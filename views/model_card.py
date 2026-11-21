@@ -1,4 +1,4 @@
-"""Model card: data, protocol, assumptions, limitations, split, reproduction."""
+"""Model card page: data, protocol, assumptions, limitations, reproduction."""
 
 from __future__ import annotations
 
@@ -15,13 +15,14 @@ def show() -> None:
 
     st.markdown(
         """
-**Task.** Probabilistic 48-hour forecasts of GB national grid carbon intensity
-(gCO₂/kWh), issued as p10/p50/p90 per half-hour window.
+**Task.** 48-hour probabilistic forecasts of GB national grid carbon
+intensity (gCO₂/kWh), issued as p10/p50/p90 for each half-hour window.
 
-**Models.** Gradient-boosted quantile regression (LightGBM), horizon-as-feature
-over 96 half-hour horizons, with split-conformal (CQR) interval calibration per
-horizon bucket. Track A uses lag and calendar features on the full history;
-Track B adds archived weather-forecast vintages on their covered window.
+**Models.** Gradient-boosted quantile regression (LightGBM) with the horizon
+as a feature, over 96 half-hour horizons, with conformal interval calibration
+per horizon bucket. Track A uses lag and calendar features on the full
+history; Track B adds archived weather forecasts on the window where those
+are available.
 """
     )
 
@@ -30,55 +31,55 @@ Track B adds archived weather-forecast vintages on their covered window.
     deployed_id = deployed["config"]["run_id"] if deployed else "pending"
     st.markdown(
         f"""
-**Evaluated vs deployed.** Report numbers come from models trained strictly
-before the sealed year (`{split_a}`, `{split_b}`); the app serves a
-post-evaluation refit on all data through the present (`{deployed_id}`).
-The two are never conflated.
+**Evaluated vs deployed.** The report numbers come from models trained only
+on data before the sealed year (`{split_a}`, `{split_b}`). The app serves a
+separate refit on all data through the present (`{deployed_id}`). The report
+does not cite the deployed model.
 """
     )
 
     st.markdown(
         """
 **Protocol.**
-- Issue-time simulation throughout: a forecast uses only information available
-  at its issue time, enforced in the feature builder and covered by tests that
-  poison the future and assert bit-identical features.
-- Sealed test: calendar 2025, scored exactly once; development used rolling
-  validation windows inside the training years only.
-- Weather enters as *forecasts as issued* (previous-day model runs: day-1 for
-  horizons ≤ 24 h, day-2 beyond), at train and serve time alike — never
-  observations, never reanalysis.
-- Significance via day-block moving bootstrap and HAC Diebold-Mariano; iid
-  tests are invalid on half-hourly errors.
+- A forecast issued at time T uses only information available at T. This is
+  enforced in the feature construction code and checked by tests that corrupt
+  everything after the issue time and assert the features do not change.
+- The sealed test is calendar 2025, scored once. Development used validation
+  windows inside the training years.
+- Weather enters as forecasts as they were issued (previous-day model runs:
+  day-1 for horizons up to 24 h, day-2 beyond), at training and serving time
+  alike. Observations and reanalysis are never used as inputs.
+- Significance tests use day-length block bootstrap and HAC Diebold-Mariano,
+  since half-hourly errors are strongly autocorrelated.
 
-**Data and licenses.**
-- [NESO Carbon Intensity API](https://carbonintensity.org.uk/) — CC BY 4.0;
-  national history cross-checked against the data-portal CSV (99.96% exact
-  agreement on actuals).
-- [Open-Meteo](https://open-meteo.com/) — CC BY 4.0, non-commercial tier;
-  per-variable archive coverage verified and recorded in the manifest.
+**Data and licences.**
+- [NESO Carbon Intensity API](https://carbonintensity.org.uk/) — CC BY 4.0.
+  The national history was cross-checked against the data-portal CSV (99.96%
+  exact agreement on actuals).
+- [Open-Meteo](https://open-meteo.com/) — CC BY 4.0, non-commercial tier.
+  Archive coverage was verified per variable and recorded in the manifest.
 - [Community vintage archive](https://github.com/nmpowell/carbon-intensity-forecast-tracking)
-  — MIT (Nick Powell); months audited individually, no 2025 coverage.
+  — MIT (Nick Powell). Months audited individually; no 2025 coverage.
 
 **Assumptions and limitations.**
-- Values are *attributed* emissions under NESO's stated methodology — not
-  metered, not marginal; shifting load by this signal is a modelling claim.
-- Scoring is national only: no published regional actuals exist, so regional
-  series are display-only operator forecasts.
-- True weather vintages begin 2024-03, so the weather ablation window is thin
-  and powered accordingly.
-- Missed vintage captures are permanent gaps (recorded, never backfilled);
-  published actuals can be revised after the fact.
+- Values are *attributed* emissions under NESO's methodology, not metered and
+  not marginal. Shifting load based on them is a modelling claim.
+- Scoring is national only. There are no published regional actuals, so
+  regional series are shown as labelled operator forecasts and not scored.
+- True weather vintages begin in March 2024, so the weather ablation window
+  is short.
+- Missed vintage captures are permanent gaps and are recorded, not
+  backfilled. Published actuals can be revised after the fact.
 
 **Reproduce.**
 ```bash
 git clone https://github.com/k-chetan/gb-carbon-forecast && cd gb-carbon-forecast
-make setup && make test     # environment from the lockfile, full test suite
+make setup && make test     # environment from the lockfile, test suite
 make report                 # rebuild the report from current artifacts
 ```
 """
     )
     st.caption(
         f"Code MIT · [repository]({common.REPO_URL}) · independent research "
-        "project, not affiliated with NESO or Open-Meteo."
+        "project, not affiliated with NESO."
     )

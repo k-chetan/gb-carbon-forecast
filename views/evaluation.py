@@ -11,18 +11,19 @@ from views import common
 LEG_LABELS = {
     "leg1": (
         "Leg 1 · vs NESO stored forecast",
-        "The operator's archived series is near-final and short-horizon: strong "
-        "context, but NOT a like-for-like 24-48 h baseline.",
+        "The archived series is revised until shortly before delivery, so it "
+        "is context rather than a valid 24-48 h baseline.",
     ),
     "leg2": (
         "Leg 2 · vs community-archive vintages",
-        "True operator vintages on archive-covered months (2023-24 context; "
-        "2026-07 onward scored like-for-like; no 2025 archive exists).",
+        "Operator vintages from the community archive. 2026-07 onward is "
+        "scored at matched issue times; the 2023-24 months are context. "
+        "No 2025 archive exists.",
     ),
     "leg3": (
-        "Leg 3 · vs this repo's own logged vintages",
-        "The only fully clean 48 h comparison; n starts tiny and matures "
-        "unattended, refreshed before submission.",
+        "Leg 3 · vs this project's own logged vintages",
+        "Vintages logged hourly here since Nov 2026. The sample starts small "
+        "and grows over time; it is re-scored before submission.",
     ),
 }
 
@@ -84,8 +85,7 @@ def show() -> None:
         st.altair_chart(chart, width="stretch")
     else:
         pending(
-            "The sealed 2025 test has not been opened yet. It is scored exactly "
-            "once; curves appear here the moment that run lands."
+            "Sealed 2025 results will appear here after the one-time evaluation run."
         )
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -112,7 +112,7 @@ def show() -> None:
             cov = sealed["models"]["track_b"]["metrics"]["coverage_80"]
             st.markdown(f"**80% interval coverage (Track B):** {cov:.1%}")
         else:
-            pending("Sealed metrics publish with the one-time evaluation run.")
+            pending("Sealed metrics will appear after the evaluation run.")
 
     # --- legs ---------------------------------------------------------------
     with col_b:
@@ -170,7 +170,7 @@ def show() -> None:
     st.markdown("---")
     common.section_card(
         "Live self-scoring",
-        "updated weekly by the unattended pipeline; n grows on its own",
+        "updated weekly by the scheduled scoring job",
     )
     if live:
         v = live["vintages"]
@@ -199,4 +199,4 @@ def show() -> None:
             )
         st.caption(f"Last self-scoring run: {live['updated_utc']}")
     else:
-        pending("First weekly self-scoring run has not landed yet.")
+        pending("The first weekly scoring run has not completed yet.")

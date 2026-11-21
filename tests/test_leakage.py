@@ -1,8 +1,8 @@
 """Leakage guards: no feature may see past its issue time.
 
-The gold-standard test poisons every observation that was not yet available
-at the issue time and asserts the built features are bit-identical. If any
-feature ever reads the future, these tests fail.
+These tests corrupt every observation that was not yet available at the
+issue time and check that the built features are identical. If any feature
+reads the future, they fail.
 """
 
 import numpy as np

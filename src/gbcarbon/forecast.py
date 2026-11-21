@@ -1,10 +1,10 @@
 """Nightly 48 h forecast issuance from the deployed model bundle.
 
-Pulls recent published actuals (lags) and the previous-day weather runs for
-the target span — the exact lead structure the model was trained on — builds
-one issue's feature frame, predicts p10/p50/p90, and writes
-``forecasts/latest.json`` plus an immutable dated copy under
-``forecasts/history/``.
+Pulls recent published actuals (for the lags) and the previous-day weather
+runs for the target span, which is the same lead structure the model was
+trained on. Builds one issue's feature frame, predicts p10/p50/p90, and
+writes ``forecasts/latest.json`` plus a dated copy under
+``forecasts/history/`` that is never modified afterwards.
 
 JSON schema (stable; the Semester 2 scheduler consumes it):
     {

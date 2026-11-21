@@ -1,6 +1,6 @@
 # GB Carbon Intensity Forecast
 
-> **Probabilistic 48-hour forecasts of Great Britain's grid carbon intensity, honestly benchmarked against the grid operator's own forecasts.**
+> **48-hour probabilistic forecasts of Great Britain's grid carbon intensity, evaluated against the grid operator's own forecasts.**
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gb-carbon-forecast-go.streamlit.app/)
 [![ci](https://github.com/k-chetan/gb-carbon-forecast/actions/workflows/ci.yml/badge.svg)](https://github.com/k-chetan/gb-carbon-forecast/actions/workflows/ci.yml)
@@ -10,11 +10,9 @@
 
 ## Overview
 
-This project forecasts the carbon intensity (gCO₂/kWh) of the GB national grid 48 hours ahead with calibrated uncertainty bands (p10/p50/p90), using keyless public data only. Three commitments shape the design:
+This project forecasts the carbon intensity (gCO₂/kWh) of the GB national grid 48 hours ahead, with p10/p50/p90 uncertainty bands, using only free public data.
 
-1. **Issue-time discipline.** A forecast may use only information available at its issue time. Weather enters as archived *forecasts* (what a forecaster had), never as observations (what actually happened).
-2. **Honest operator comparison.** NESO's stored forecast series is a near-final, short-horizon product; comparing against it at 48 h would be meaningless. True 48-hour comparisons need forecast *vintages* — so an hourly logger captures NESO's forward forecast as issued, from day one, and the comparison strengthens by itself over time.
-3. **A self-running evaluation instrument.** Capture, scoring and alerting run unattended on GitHub Actions; results mature without anyone touching the repo.
+A forecast may only use information that was available at the time it was issued. Weather enters as archived *forecasts* (what a forecaster would have had), never as observations. Comparing against the operator is done carefully: NESO's stored forecast series is revised until shortly before delivery, so it is not a valid 48-hour baseline. Proper comparisons need forecast *vintages*, and because those mostly don't exist for past years, an hourly job here has been capturing NESO's forward forecast since day one. The comparison data grows on its own.
 
 ## Architecture
 
@@ -32,7 +30,7 @@ graph LR
     R --> APP
 ```
 
-Everything scheduled runs in GitHub Actions and writes versioned artifacts into the repository; the app is a read-only consumer, so a job failure can only age what users see, never corrupt it.
+Everything scheduled runs in GitHub Actions and writes versioned files into the repository. The app only reads them, so a failed job means stale data, not wrong data.
 
 ## Repository structure
 
@@ -41,22 +39,23 @@ Everything scheduled runs in GitHub Actions and writes versioned artifacts into 
 ├── src/gbcarbon/          # Backend logic
 │   ├── neso.py            # -> NESO API client (stdlib only)
 │   ├── vintage.py         # -> Hourly fw48h vintage capture
-│   ├── watchdog.py        # -> Staleness assessment for alerting
+│   ├── watchdog.py        # -> Staleness checks for alerting
 │   └── scoring.py         # -> Weekly compaction + prospective scoring
 ├── tests/                 # Pytest suite + live-API fixtures
-├── .github/workflows/     # ci, vintage-logger, watchdog, self-scoring
-├── docs/decisions.md      # One-line log of design decisions
+├── .github/workflows/     # ci, vintage-logger, watchdog, self-scoring, nightly-forecast
+├── docs/decisions.md      # Dated log of design decisions
 ├── app.py                 # Streamlit entry point
 └── Makefile               # Task automation
 ```
 
 ## Operations
 
-Everything below runs unattended on GitHub Actions:
+All of this runs unattended on GitHub Actions:
 
-- **vintage-logger** (hourly, minute 17): captures NESO's forward 48 h forecast to the `vintage-log` branch. A missed hour is a permanent gap — vintages cannot be backfilled — and is recorded in `vintages/manifest.json`.
-- **watchdog** (daily): opens or updates a **PIPELINE STALE** issue when the last capture is over 6 h old or the last nightly forecast over 48 h old, closes it with a comment on recovery, and pushes a keepalive commit if capture activity ever stops for 7 days (GitHub disables crons after 60 days of repo inactivity).
-- **self-scoring** (weekly, Sun): compacts closed months of daily vintage CSVs into monthly parquet, re-scores every matured logged forecast against published actuals from scratch (idempotent), and commits `results/prospective_scores.parquet` + `results/prospective_summary.json`.
+- **vintage-logger** (hourly, minute 17): saves NESO's forward 48 h forecast to the `vintage-log` branch. A missed hour is a permanent gap (vintages can't be backfilled) and gets recorded in `vintages/manifest.json`.
+- **nightly-forecast** (03:07 UTC): issues the deployed model's 48 h forecast, writing `forecasts/latest.json` plus a dated copy under `forecasts/history/`.
+- **watchdog** (daily): opens or updates a **PIPELINE STALE** issue if the last capture is over 6 h old or the last forecast over 48 h old, closes it on recovery, and pushes a keepalive commit if captures ever stop for 7 days (GitHub disables crons after 60 days of repo inactivity).
+- **self-scoring** (weekly, Sun): re-scores every matured logged forecast against published actuals from scratch and compacts closed months of the vintage log to parquet. Results go to `results/`.
 - **ci** (push/PR): ruff + pytest.
 
 ## Live app
@@ -74,18 +73,15 @@ make report    # regenerate report figures + data and compile build/report.pdf
 
 ## Pre-submission refresh
 
-One command re-scores everything that has matured since the build and rebuilds
-the report — **only the prospective, accumulating sections change**; the frozen
-sealed-test results under `results/sealed/` are never touched:
+One command re-scores everything that has matured since the build and rebuilds the report. Only the prospective sections change; the sealed test results under `results/sealed/` are frozen and never touched:
 
 ```bash
 make refresh RUN_A=runs/<final-track-A> RUN_B=runs/<final-track-B>
 ```
 
-It refetches the vintage log, recomputes the weekly self-scoring summary and
-the prospective operator legs (2 and 3), regenerates all figures, and compiles
-the PDF. Any future session can run it; the run directories to pass are the
-two recorded in `results/sealed/sealed_2025.json`.
+This refetches the vintage log, recomputes the weekly scoring summary and the prospective operator comparisons, regenerates the figures, and compiles the PDF. The two run directories to pass are recorded in `results/sealed/sealed_2025.json`.
+
+-----
 
 ## License & attribution
 
@@ -95,6 +91,6 @@ two recorded in `results/sealed/sealed_2025.json`.
 
 - [NESO Carbon Intensity API](https://carbonintensity.org.uk/) — © National Energy System Operator, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 - [Open-Meteo](https://open-meteo.com/) — [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), non-commercial tier
-- [carbon-intensity-forecast-tracking](https://github.com/nmpowell/carbon-intensity-forecast-tracking) (Nick Powell, MIT) — community archive of NESO forecast vintages, used for one leg of the operator comparison
+- [carbon-intensity-forecast-tracking](https://github.com/nmpowell/carbon-intensity-forecast-tracking) (Nick Powell, MIT) — community archive of NESO forecast vintages, used in one part of the operator comparison
 
 > *Disclaimer: this is an independent research project and is not affiliated with NESO or Open-Meteo.*
