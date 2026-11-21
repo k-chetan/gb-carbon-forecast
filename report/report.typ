@@ -60,9 +60,25 @@
 #heading(numbering: none, outlined: false)[Abstract]
 
 #if sealed != none [
-  [TO BE FINALIZED AT M6 WITH SEALED NUMBERS — ~200 words: problem, method,
-  sealed-test headline results, weather ablation finding, operator comparison,
-  the self-running instrument, and the deployment.]
+  Great Britain's grid carbon intensity varies two- to four-fold within a day,
+  but evaluating new forecasts against the grid operator is subtly broken: the
+  operator's archived series is near-final, so retrospective comparisons at
+  24–48 hours are not like-for-like. This project builds a probabilistic
+  48-hour forecaster of GB national carbon intensity from keyless public data
+  and evaluates it under strict issue-time discipline, with a sealed test year
+  (2025) scored exactly once. Gradient-boosted quantile models with
+  trailing-window conformal calibration achieve a sealed MAE of
+  28.1 gCO#sub[2]/kWh across horizons to 48 h — 35% below persistence — with
+  80.2% empirical coverage of the nominal 80% intervals. Archived
+  weather-forecast vintages are the decisive input, improving MAE by 42% on a
+  provenance-clean ablation window. Against true operator forecast vintages at
+  matched issue times, the model is statistically indistinguishable at 7–48 h
+  horizons, while the operator retains a clear advantage inside 6 hours.
+  Because operator vintages do not exist historically, the project also
+  deploys a self-running evaluation instrument — hourly vintage capture,
+  nightly forecast issuance, weekly self-scoring and alerting — that matures
+  the prospective evidence base unattended into the second semester, when a
+  carbon-aware scheduler will consume these forecasts.
 ] else [
   #pending("abstract is written once the sealed 2025 evaluation lands")
 ]
@@ -192,7 +208,49 @@ absolute difference 0.0015 gCO#sub[2]/kWh), with a handful of post-publication
 revisions explaining the remainder — the API series is used as the actuals
 reference, and the possibility of revisions is carried as a limitation.
 Published actuals are missing for a small number of windows; these are
-documented and excluded from scoring, never imputed.
+documented and excluded from scoring, never imputed (@fig-gaps).
+
+#figure(
+  image("figures/eda_missing_actuals.png", width: 86%),
+  caption: [Missing published actuals per month across the full history:
+  sparse, clustered, and carried as exclusions rather than imputations.],
+) <fig-gaps>
+
+== Exploratory structure
+
+#if data.eda != none [
+  The decade of history carries a strong decarbonization trend — annual mean
+  intensity fell from 247.7 gCO#sub[2]/kWh (2018) to 125.3 (2026), with the
+  2021 gas-price episode visible as a plateau — and the distribution tightens
+  as it falls (@fig-trend, @fig-shift). Intensity is strongly diurnal and
+  seasonal, and its autocorrelation stays high at the daily lag
+  (ACF #str(data.eda.acf.at("24h")) at 24 h,
+  #str(data.eda.acf.at("7d")) at 7 days), which motivates both the lag
+  feature family and day-block inference; both figures and the gap census
+  regenerate from the raw pull.
+
+  #figure(
+    image("figures/eda_trend_monthly.png", width: 88%),
+    caption: [Monthly mean national carbon intensity with a 12-month rolling
+    mean: the decarbonization trend every model must survive.],
+  ) <fig-trend>
+
+  #figure(
+    image("figures/eda_yearly_distributions.png", width: 88%),
+    caption: [Distribution shift by year (boxes without outliers): the level
+    falls and the spread narrows — training-era statistics do not transfer
+    unexamined, which is why intervals are recalibrated from trailing
+    errors.],
+  ) <fig-shift>
+
+  #figure(
+    image("figures/eda_seasonal_profiles.png", width: 88%),
+    caption: [Average day profile by season: the within-day swing that makes
+    load-shifting worthwhile in the first place.],
+  ) <fig-season>
+] else [
+  #pending("EDA artifacts")
+]
 
 == Weather forecast archives
 
@@ -268,6 +326,29 @@ same previous-run vintages, so there is no train/serve skew; against a
 freshest-run serving design this makes the measured weather contribution a
 conservative lower bound.
 
+#figure(
+  table(
+    columns: (auto, auto, auto),
+    align: (left, left, left),
+    table.header([*feature family*], [*derivation*], [*availability at issue $T$*]),
+    [lags (9)], [published actuals 0.5 h–7 d behind the last elapsed window],
+    [window fully elapsed by $T$, structural],
+    [rolling means (2)], [24 h and 7 d means ending at the last elapsed window],
+    [same],
+    [trend (1)], [freshest value minus its 24 h lag], [same],
+    [calendar (7)], [cyclic hour, weekday, month, day-of-year, GB holiday,
+    of the *target* time], [deterministic],
+    [horizon (1)], [$h$ in hours], [deterministic],
+    [weather day-2 (11)], [previous-run vintages at the target time,
+    lead ≈ 48 h], [run issued at $T + h - 48 "h" lt.eq T$ for all
+    $h lt.eq 48$],
+    [weather day-1 (11)], [previous-run vintages, lead ≈ 24 h],
+    [admissible only for $h lt.eq 24$; masked to missing beyond],
+  ),
+  caption: [Feature families and their availability rules. Admissibility is
+  enforced in the builder and covered by future-poisoning tests.],
+) <tbl-features>
+
 == Interval calibration
 
 Raw quantile heads under-covered on validation (0.50 against the nominal
@@ -290,26 +371,53 @@ touched 2025-01-01 00:00 by a single window.
 
 == Significance
 
-Half-hourly forecast errors are strongly autocorrelated (lag-24 h ACF 0.74),
-so iid tests are invalid. Paired comparisons use (i) a moving-block bootstrap
-@kunsch1989jackknife with day-length blocks and (ii) Diebold–Mariano
-@diebold1995comparing with Bartlett/HAC variance @newey1987simple, truncation
-at the forecast-horizon MA order floored at one day.
+Half-hourly forecast errors are strongly autocorrelated (lag-24 h ACF 0.74,
+@fig-acf), so iid tests are invalid. Paired comparisons use (i) a
+moving-block bootstrap @kunsch1989jackknife with day-length blocks and (ii)
+Diebold–Mariano @diebold1995comparing with Bartlett/HAC variance
+@newey1987simple, truncation at the forecast-horizon MA order floored at one
+day.
+
+#figure(
+  image("figures/eda_autocorrelation.png", width: 86%),
+  caption: [Autocorrelation of half-hourly intensity out to one week: the
+  daily and weekly structure that both the lag features exploit and the
+  block-inference design respects.],
+) <fig-acf>
 
 == Pilot-anchor reproduction
 
 Before any modelling, the data pipeline reproduced five pre-registered anchor
-numbers from the preceding pilot study on the same protocol
+numbers from the preceding pilot study on the same protocol, all within
+1.1#sym.percent (@tbl-anchors).
+
 #if anchors != none [
-  — persistence-24 h #anchors.reproduced.persistence_24h.mae (pilot 38.9),
-  persistence-48 h #anchors.reproduced.persistence_48h.mae (47.5),
-  7-day seasonal naive #anchors.reproduced.seasonal_naive_7d.mae (55.9),
-  untuned lags+calendar GBM #anchors.reproduced.gbm_lags_calendar_24h.mae
-  (38.3), and the stored NESO series
-  #anchors.reproduced.neso_stored_forecast.mae at exactly
-  n = #anchors.reproduced.neso_stored_forecast.n pairs (9.3) —
-  all within 1.1#sym.percent.
-] else [ . #pending("anchor reproduction output") ]
+  #figure(
+    table(
+      columns: (auto, auto, auto, auto),
+      align: (left, right, right, right),
+      table.header([*anchor*], [*pilot*], [*reproduced*], [*n*]),
+      [persistence-24 h], [38.9],
+      [#str(anchors.reproduced.persistence_24h.mae)],
+      [#str(anchors.reproduced.persistence_24h.n)],
+      [persistence-48 h], [47.5],
+      [#str(anchors.reproduced.persistence_48h.mae)],
+      [#str(anchors.reproduced.persistence_48h.n)],
+      [seasonal naive (7 d)], [55.9],
+      [#str(anchors.reproduced.seasonal_naive_7d.mae)],
+      [#str(anchors.reproduced.seasonal_naive_7d.n)],
+      [lags+calendar GBM, 24 h], [38.3],
+      [#str(anchors.reproduced.gbm_lags_calendar_24h.mae)],
+      [#str(anchors.reproduced.gbm_lags_calendar_24h.n)],
+      [NESO stored series], [9.3],
+      [#str(anchors.reproduced.neso_stored_forecast.mae)],
+      [#str(anchors.reproduced.neso_stored_forecast.n)],
+    ),
+    caption: [Pilot anchors and their reproduction on the fresh pull
+    (MAE on calendar 2025, gCO#sub[2]/kWh). The stored-series pair count
+    reproduces exactly, a strong end-to-end pipeline check.],
+  ) <tbl-anchors>
+] else [ #pending("anchor reproduction output") ]
 The anchor involving a learned model re-runs a pilot experiment once, without
 iteration; all genuine model development used validation inside the training
 years only.
@@ -343,9 +451,48 @@ years only.
 == Sealed 2025 test
 
 #if sealed != none [
-  [TO BE WRITTEN AT M6: headline table from sealed_2025.json — per-track MAE,
-  pinball, coverage by bucket; comparison rows vs persistence and vs the
-  labeled Leg 1; horizon-curve reading.]
+  #let ma = sealed.models.track_a.metrics
+  #let mb = sealed.models.track_b.metrics
+  #let r2 = (x) => str(calc.round(x, digits: 2))
+  #let pct = (x) => str(calc.round(x * 100, digits: 1)) + "%"
+
+  Calendar 2025 was scored exactly once, on an hourly issue grid
+  (#str(sealed.n_pairs) issue–target pairs). @tbl-sealed gives the frozen
+  headline metrics; @fig-horizon the per-horizon curves.
+
+  #figure(
+    table(
+      columns: (auto, auto, auto, auto, auto, auto),
+      align: (left, right, right, right, right, right),
+      table.header(
+        [*model*], [*MAE*], [*1–6 h*], [*7–24 h*], [*25–48 h*], [*coverage 80%*],
+      ),
+      [Track A (lags+calendar)],
+      [#r2(ma.mae_p50)], [#r2(ma.by_bucket.at("01_06h").mae_p50)],
+      [#r2(ma.by_bucket.at("07_24h").mae_p50)],
+      [#r2(ma.by_bucket.at("25_48h").mae_p50)], [#pct(ma.coverage_80)],
+      [Track B (+weather)],
+      [#r2(mb.mae_p50)], [#r2(mb.by_bucket.at("01_06h").mae_p50)],
+      [#r2(mb.by_bucket.at("07_24h").mae_p50)],
+      [#r2(mb.by_bucket.at("25_48h").mae_p50)], [#pct(mb.coverage_80)],
+    ),
+    caption: [Sealed 2025 metrics (MAE in gCO#sub[2]/kWh; 80% interval
+    coverage from trailing-window conformal calibration).],
+  ) <tbl-sealed>
+
+  Three readings stand out. First, Track B beats issue-time persistence by
+  35.2% overall (28.05 vs 43.31, block-bootstrap and HAC-DM p #sym.lt
+  10#super[-5]) and Track A by 24.3%, confirming the ablation on seven years
+  of training data. Second, Track B's error is almost flat in horizon (27.8 →
+  28.2 gCO#sub[2]/kWh from the first to the last bucket) while Track A
+  degrades steeply (20.8 → 42.8): weather forecasts carry nearly all of the
+  long-horizon signal. Third — an honest crossover — Track A is the better
+  model below 6 hours (20.8 vs 27.8), where recent lags dominate and Track B
+  pays for its thin training window; an operational blend would route by
+  horizon, and the deployed model accepts this cost to keep provenance
+  simple. Track B's intervals hit nominal coverage almost exactly
+  (80.0–80.3% in every bucket), the direct payoff of recalibrating from
+  trailing matured errors.
 
   #figure(
     image("figures/horizon_curves.png", width: 92%),
@@ -365,13 +512,34 @@ years only.
 
 == Three-leg operator comparison
 
-#if legs != none [
-  [TO BE WRITTEN AT M6: Leg 2 and Leg 3 tables from legs.json with n and
-  significance where block inference is powered; projected Leg 3 n by the
-  second semester.]
-] else [
-  #pending("operator legs (results/legs/legs.json)")
-]
+*Leg 1 — stored series (labeled).* The operator's archived forecast scores
+9.28 gCO#sub[2]/kWh on 2025: three times better than any 48-hour model, and
+exactly why it is not a valid 24–48 h baseline — it is a near-final product,
+revised until shortly before delivery. It is reported as context, never as
+the comparison.
+
+*Leg 2 — archive vintages at matched issue times.* On 550 hourly captures
+from the community archive (July–November 2026, out-of-sample for models
+trained through 2024), Track B is statistically indistinguishable from the
+operator's true forward forecasts at longer horizons: 26.39 vs 26.49
+(−0.4%, DM p = 0.89) at 7–24 h and 27.70 vs 26.47 (+4.6%, p = 0.14) at
+25–48 h. Inside 6 hours the operator is clearly better (+21.6%,
+p #sym.lt 10#super[-3]), as expected for a system with near-real-time
+generation data. Without weather, Track A loses to the vintages everywhere
+(+47% overall) — weather is what buys operator parity. The operator's own
+vintage accuracy on its 2023–24 archive months (MAE 18.2 / 24.4 / 26.0 by
+bucket) matches its 2026 window, supporting the comparison's stability.
+
+*Leg 3 — own logged vintages.* At build time the project's logger had
+captured two forward curves and nothing had matured: by construction this leg
+starts at zero. Its value is the slope. At the hourly capture cadence and one
+nightly model forecast per day, roughly 5,000 operator captures
+(≈ 0.5 million scored windows) and 200 model forecast issues (≈ 19,000
+windows) will have matured by June 2027 — ample power for bucket-level
+block inference — and the pre-submission refresh regenerates this section
+from whatever has accumulated.
+
+#if legs != none [] else [ #pending("operator legs (results/legs/legs.json)") ]
 
 == Live self-scoring instrument
 
@@ -450,13 +618,39 @@ from a button in roughly thirty seconds.
   )
 ]
 
+#if data.status.at("app_screenshot", default: false) [
+  #figure(
+    image("figures/app_forecast.png", width: 86%),
+    caption: [The live forecast explorer, captured headlessly from the public
+    URL at report build time.],
+  )
+]
+
 // ============================================================================
 // 8. Discussion and limitations
 // ============================================================================
 
 = Discussion and limitations
 
-[TO BE WRITTEN AT M6 around the sealed numbers. Fixed content below.]
+*The research question, answered with a boundary.* A lightweight open-data
+model can match the grid operator at 7–48 h horizons — the horizons that
+matter for day-ahead load shifting — but not inside 6 hours, where the
+operator's near-real-time generation telemetry is decisive. The weather
+ablation locates the mechanism: forecast vintages of wind above all carry the
+long-horizon signal (−41.9% on the matched common window; −24.3% against a
+Track A that enjoys seven years of history), and the two deltas differ for an
+instructive reason — lag models improve with more history, weather models
+with better weather, so the measured weather contribution shrinks as the
+lags-only baseline strengthens.
+
+*Calibration was the hard part.* Raw quantile heads under-covered badly
+(0.50), and every static correction decayed under regime shift; only
+recalibrating from trailing matured errors — which the unattended instrument
+produces anyway — held nominal coverage on a full unseen year. The sealed
+80.2% against nominal 80% is the project's quietest but most load-bearing
+number.
+
+Fixed limitations:
 
 - *Attributed, not marginal.* Values follow NESO's average-intensity
   methodology; shifting load by this signal is a modelling claim about
@@ -527,7 +721,22 @@ runs/                one directory per training run (config + metrics)
 forecasts/           latest.json + dated history/ (the project's own vintages)
 report/              this document, its data file, figures, references")
 
-#heading(numbering: none)[Appendix B: decisions log]
+#heading(numbering: none)[Appendix B: model and run configuration]
+
+#if sealed != none [
+  Both tracks share one LightGBM configuration (600 trees, learning rate
+  0.05, 127 leaves, minimum 100 samples per leaf, 90% row and column
+  subsampling, seed 42), three quantile heads (0.1 / 0.5 / 0.9), and the
+  trailing conformal window of 30 days with day-level updates. Sealed-eval
+  runs: Track A `#sealed.models.track_a.run` (trained 2018-01-01 →
+  2024-12-29, two-hourly issues); Track B `#sealed.models.track_b.run`
+  (trained 2024-04-01 → 2024-12-29, hourly issues). The deployed model is a
+  tagged refit of Track B through the present; report numbers never come
+  from it. Every run directory under `runs/` carries its full configuration,
+  feature list, git hash and metrics as JSON.
+]
+
+#heading(numbering: none)[Appendix C: decisions log]
 
 The repository file `docs/decisions.md` records every material deviation from
 the product requirements and design references, one line each, dated.

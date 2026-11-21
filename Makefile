@@ -28,6 +28,7 @@ logger-once:
 	PYTHONPATH=src uv run python -m gbcarbon.vintage --out ./vintages-local
 
 report:
+	-PYTHONPATH=src uv run --group report python scripts/screenshot_app.py
 	PYTHONPATH=src uv run python scripts/report_figures.py
 	mkdir -p build
 	typst compile report/report.typ build/report.pdf

@@ -228,6 +228,7 @@ def main() -> int:
         "ablation": fig_ablation(),
         "calibration": fig_calibration(),
         "fan_example": fig_fan_example(),
+        "app_screenshot": (FIGS / "app_forecast.png").exists(),
     }
     fig_architecture()
 
