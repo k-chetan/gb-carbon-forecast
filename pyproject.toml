@@ -1,0 +1,36 @@
+[project]
+name = "gb-carbon-forecast"
+version = "0.1.0"
+description = "Probabilistic 48-hour forecasts of GB grid carbon intensity, benchmarked against the grid operator's own forecasts"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+    "streamlit>=1.40",
+    "pandas>=2.2",
+    "altair>=5.4",
+    "pyarrow>=17",
+    "requests>=2.32",
+]
+
+[dependency-groups]
+dev = [
+    "scikit-learn>=1.5",
+    "lightgbm>=4.5",
+    "matplotlib>=3.9",
+    "holidays>=0.60",
+    "scipy>=1.14",
+    "statsmodels>=0.14",
+    "pytest>=8.3",
+    "ruff>=0.8",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
