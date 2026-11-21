@@ -1,4 +1,11 @@
-.PHONY: setup lint format test run-app logger-once report refresh
+.PHONY: setup lint format test run-app logger-once report refresh verify
+
+verify:
+	uv run pytest -q
+	uv run python scripts/independent_recompute.py
+	@echo "re-run the live chaos drill with:"
+	@echo "  gh workflow run vintage-logger.yml -f simulate_failure=true"
+	@echo "  gh workflow run watchdog.yml -f max_capture_age_hours=0"
 
 setup:
 	uv sync
