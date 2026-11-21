@@ -149,7 +149,8 @@ def predict_quantiles(
 def load_frame(args: argparse.Namespace) -> pd.DataFrame:
     history = pd.read_parquet("data/raw/neso_api_history.parquet")
     start = pd.Timestamp(args.train_start, tz="UTC")
-    end = pd.Timestamp(args.train_end, tz="UTC") - pd.Timedelta(hours=48)
+    # last issue must keep its 48 h horizon strictly before train_end
+    end = pd.Timestamp(args.train_end, tz="UTC") - pd.Timedelta(hours=48, minutes=30)
     issues = issue_grid(start, end, args.issue_step_h)
     assert_outside_sealed(issues, "issue grid")
 
