@@ -7,3 +7,7 @@ __pycache__/
 .ipynb_checkpoints/
 vintages-local/
 runs/*/val_predictions.parquet
+build/
+report/_data.json
+report/figures/
+.vintage-ro/

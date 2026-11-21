@@ -69,7 +69,23 @@ Everything below runs unattended on GitHub Actions:
 make setup     # uv sync — creates .venv from the lockfile
 make test      # pytest
 make run-app   # streamlit run app.py
+make report    # regenerate report figures + data and compile build/report.pdf
 ```
+
+## Pre-submission refresh
+
+One command re-scores everything that has matured since the build and rebuilds
+the report — **only the prospective, accumulating sections change**; the frozen
+sealed-test results under `results/sealed/` are never touched:
+
+```bash
+make refresh RUN_A=runs/<final-track-A> RUN_B=runs/<final-track-B>
+```
+
+It refetches the vintage log, recomputes the weekly self-scoring summary and
+the prospective operator legs (2 and 3), regenerates all figures, and compiles
+the PDF. Any future session can run it; the run directories to pass are the
+two recorded in `results/sealed/sealed_2025.json`.
 
 ## License & attribution
 
