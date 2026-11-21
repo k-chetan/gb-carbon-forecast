@@ -1,11 +1,11 @@
 {
-  "computed_utc": "2026-11-21T11:19Z",
+  "computed_utc": "2026-11-21T11:43Z",
   "run_a": {
-    "id": "20261121T110836Z_trackA_common-s",
+    "id": "20261121T113215Z_trackA_common-t",
     "track": "A"
   },
   "run_b": {
-    "id": "20261121T111334Z_trackB_common-s",
+    "id": "20261121T113716Z_trackB_common-t",
     "track": "B"
   },
   "note": "negative delta_pct means B (weather) beats A (lags+calendar); paired on identical issue/target times",
@@ -13,84 +13,84 @@
     {
       "bucket": "overall",
       "n_pairs": 419328,
-      "mae_a": 44.35,
-      "mae_b": 28.64,
-      "delta_pct": -35.43,
-      "coverage80_a": 0.283,
-      "coverage80_b": 0.316,
+      "mae_a": 46.56,
+      "mae_b": 27.07,
+      "delta_pct": -41.86,
+      "coverage80_a": 0.788,
+      "coverage80_b": 0.739,
       "block_bootstrap": {
-        "mean_diff": -15.71,
+        "mean_diff": -19.489,
         "p_value": 0.0,
         "ci95": [
-          -16.369,
-          -15.065
+          -20.19,
+          -18.795
         ]
       },
       "dm_hac": {
-        "stat": -34.808,
+        "stat": -40.066,
         "p_value": 0.0
       }
     },
     {
       "bucket": "01_06h",
       "n_pairs": 52416,
-      "mae_a": 42.09,
-      "mae_b": 28.31,
-      "delta_pct": -32.75,
-      "coverage80_a": 0.301,
-      "coverage80_b": 0.328,
+      "mae_a": 42.56,
+      "mae_b": 26.67,
+      "delta_pct": -37.33,
+      "coverage80_a": 0.796,
+      "coverage80_b": 0.738,
       "block_bootstrap": {
-        "mean_diff": -13.783,
+        "mean_diff": -15.888,
         "p_value": 0.0,
         "ci95": [
-          -15.43,
-          -12.03
+          -17.572,
+          -14.131
         ]
       },
       "dm_hac": {
-        "stat": -16.052,
+        "stat": -17.843,
         "p_value": 0.0
       }
     },
     {
       "bucket": "07_24h",
       "n_pairs": 157248,
-      "mae_a": 44.23,
-      "mae_b": 28.55,
-      "delta_pct": -35.45,
-      "coverage80_a": 0.286,
-      "coverage80_b": 0.322,
+      "mae_a": 46.5,
+      "mae_b": 26.94,
+      "delta_pct": -42.07,
+      "coverage80_a": 0.789,
+      "coverage80_b": 0.738,
       "block_bootstrap": {
-        "mean_diff": -15.679,
+        "mean_diff": -19.562,
         "p_value": 0.0,
         "ci95": [
-          -16.719,
-          -14.668
+          -20.652,
+          -18.415
         ]
       },
       "dm_hac": {
-        "stat": -29.64,
+        "stat": -34.231,
         "p_value": 0.0
       }
     },
     {
       "bucket": "25_48h",
       "n_pairs": 209664,
-      "mae_a": 45.0,
-      "mae_b": 28.78,
-      "delta_pct": -36.04,
-      "coverage80_a": 0.276,
-      "coverage80_b": 0.308,
+      "mae_a": 47.61,
+      "mae_b": 27.27,
+      "delta_pct": -42.71,
+      "coverage80_a": 0.785,
+      "coverage80_b": 0.739,
       "block_bootstrap": {
-        "mean_diff": -16.215,
+        "mean_diff": -20.335,
         "p_value": 0.0,
         "ci95": [
-          -17.07,
-          -15.345
+          -21.327,
+          -19.363
         ]
       },
       "dm_hac": {
-        "stat": -25.573,
+        "stat": -29.184,
         "p_value": 0.0
       }
     }
