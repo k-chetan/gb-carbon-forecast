@@ -74,5 +74,6 @@ make run-app   # streamlit run app.py
 
 - [NESO Carbon Intensity API](https://carbonintensity.org.uk/) — © National Energy System Operator, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 - [Open-Meteo](https://open-meteo.com/) — [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), non-commercial tier
+- [carbon-intensity-forecast-tracking](https://github.com/nmpowell/carbon-intensity-forecast-tracking) (Nick Powell, MIT) — community archive of NESO forecast vintages, used for one leg of the operator comparison
 
 > *Disclaimer: this is an independent research project and is not affiliated with NESO or Open-Meteo.*

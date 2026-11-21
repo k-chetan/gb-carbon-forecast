@@ -11,3 +11,6 @@ One line per material decision or deviation from the PRD / UI canvas.
 - 2026-11-21 · Python 3.12 pinned project-wide (.python-version): broadest wheel support for the pinned stack.
 - 2026-11-21 · PRD's weekly automated retrain dropped: the deployed model is the post-evaluation refit; the nightly job only issues forecasts, so the served model stays identical to the documented one.
 - 2026-11-21 · App is a read-only consumer of committed artifacts (forecasts/latest.json): no model libraries in the deployed environment.
+- 2026-11-21 · Leg 2 community vintages subsampled to hourly capture cadence (archive logs every 30 min): matches this project's own logger cadence; full resolution regenerable via scripts/build_community_vintages.py without the subsample.
+- 2026-11-21 · Weather features come from two archived-forecast sources with explicit lead semantics: Historical Forecast API (short-lead chain) and Previous Runs API (previous_day1 admissible for horizons <= 24 h, previous_day2 for <= 48 h); availability offsets enforced in the feature builder, not by convention.
+- 2026-11-21 · Eight weather grid points spanning the wind regions (Highlands, southern Scotland, Dogger Bank, Irish Sea, mid-Wales, SW England, London, East Anglia offshore): wind belts plus demand centres, fixed before any model sees data.

@@ -28,6 +28,29 @@
       "sha256": "520c0bbedaa60dcb9f65838f077487cc3fcf0f2d4fea97be09ccc0622ece3fa0",
       "source_commit": "e79b24fc8340670d0d0aec6c0f0ac529789f9dbb",
       "url": "https://github.com/nmpowell/carbon-intensity-forecast-tracking"
+    },
+    "neso_api_history": {
+      "coverage_end": "2026-11-21 09:30:00+00:00",
+      "coverage_start": "2017-09-23 23:30:00+00:00",
+      "file": "neso_api_history.parquet",
+      "license": "CC BY 4.0 (NESO Carbon Intensity API)",
+      "missing_actuals": 625,
+      "missing_forecasts": 43,
+      "pulled_utc": "2026-11-21T10:22Z",
+      "rows": 160402,
+      "sha256": "0b501e4fc656922bcf5b216cdd6f3f94b03e42052275a39ab5ab1f6b1533b19a",
+      "url": "https://api.carbonintensity.org.uk/intensity/{from}/{to} (13-day chunks)"
+    },
+    "neso_portal_national": {
+      "coverage_end": "2026-12-21 10:00:00+00:00",
+      "coverage_start": "2018-01-01 00:00:00+00:00",
+      "file": "neso_portal_national.csv",
+      "license": "CC BY 4.0 (NESO data portal)",
+      "pulled_utc": "2026-11-21T10:23Z",
+      "role": "cross-check of neso_api_history on the overlap",
+      "rows": 157269,
+      "sha256": "c5f4ad2543600a17a3bc6f30a8c1d384e6b78bcf34118926138e83426ddda43d",
+      "url": "https://api.neso.energy/dataset/f406810a-1a36-48d2-b542-1dfb1348096e/resource/0e5fde43-2de7-4fb4-833d-c7bca3b658b0/download/gb_carbon_intensity.csv"
     }
   }
 }

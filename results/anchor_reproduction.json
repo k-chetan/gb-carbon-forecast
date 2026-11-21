@@ -1,0 +1,39 @@
+{
+  "anchors": {
+    "gbm_lags_calendar_24h": 38.3,
+    "neso_stored_forecast": 9.3,
+    "persistence_24h": 38.9,
+    "persistence_48h": 47.5,
+    "seasonal_naive_7d": 55.9
+  },
+  "computed_utc": "2026-11-21T10:24Z",
+  "relative_gap": {
+    "gbm_lags_calendar_24h": 0.011,
+    "neso_stored_forecast": 0.002,
+    "persistence_24h": 0.001,
+    "persistence_48h": 0.001,
+    "seasonal_naive_7d": 0.003
+  },
+  "reproduced": {
+    "gbm_lags_calendar_24h": {
+      "mae": 37.88,
+      "n": 17520
+    },
+    "neso_stored_forecast": {
+      "mae": 9.28,
+      "n": 17477
+    },
+    "persistence_24h": {
+      "mae": 38.85,
+      "n": 17520
+    },
+    "persistence_48h": {
+      "mae": 47.55,
+      "n": 17520
+    },
+    "seasonal_naive_7d": {
+      "mae": 56.05,
+      "n": 17520
+    }
+  }
+}
