@@ -1,0 +1,152 @@
+{
+  "computed_utc": "2026-11-21T11:59Z",
+  "leg2": {
+    "leg": "leg2_community_archive",
+    "n_captures": 550,
+    "capture_span": [
+      "2026-07-17T21:00Z",
+      "2026-11-20T23:00Z"
+    ],
+    "comparisons": [
+      {
+        "model": "track_a",
+        "rows": [
+          {
+            "comparison": "track_a_vs_operator_vintage",
+            "bucket": "overall",
+            "n": 50779,
+            "mae_a": 37.81,
+            "mae_b": 25.72,
+            "delta_pct": 46.98,
+            "bootstrap_p": 0.0,
+            "dm_p": 0.0,
+            "dm_stat": 15.107
+          },
+          {
+            "comparison": "track_a_vs_operator_vintage",
+            "bucket": "01_06h",
+            "n": 6587,
+            "mae_a": 24.16,
+            "mae_b": 20.65,
+            "delta_pct": 16.99,
+            "bootstrap_p": 0.00304,
+            "dm_p": 0.00265,
+            "dm_stat": 3.005
+          },
+          {
+            "comparison": "track_a_vs_operator_vintage",
+            "bucket": "07_24h",
+            "n": 19535,
+            "mae_a": 36.93,
+            "mae_b": 26.49,
+            "delta_pct": 39.41,
+            "bootstrap_p": 0.0,
+            "dm_p": 0.0,
+            "dm_stat": 9.499
+          },
+          {
+            "comparison": "track_a_vs_operator_vintage",
+            "bucket": "25_48h",
+            "n": 24657,
+            "mae_a": 42.14,
+            "mae_b": 26.47,
+            "delta_pct": 59.23,
+            "bootstrap_p": 0.0,
+            "dm_p": 0.0,
+            "dm_stat": 10.337
+          }
+        ]
+      },
+      {
+        "model": "track_b",
+        "rows": [
+          {
+            "comparison": "track_b_vs_operator_vintage",
+            "bucket": "overall",
+            "n": 50779,
+            "mae_a": 26.86,
+            "mae_b": 25.72,
+            "delta_pct": 4.42,
+            "bootstrap_p": 0.00633,
+            "dm_p": 0.02246,
+            "dm_stat": 2.282
+          },
+          {
+            "comparison": "track_b_vs_operator_vintage",
+            "bucket": "01_06h",
+            "n": 6587,
+            "mae_a": 25.12,
+            "mae_b": 20.65,
+            "delta_pct": 21.64,
+            "bootstrap_p": 0.0008,
+            "dm_p": 0.00093,
+            "dm_stat": 3.312
+          },
+          {
+            "comparison": "track_b_vs_operator_vintage",
+            "bucket": "07_24h",
+            "n": 19535,
+            "mae_a": 26.39,
+            "mae_b": 26.49,
+            "delta_pct": -0.39,
+            "bootstrap_p": 0.89185,
+            "dm_p": 0.89309,
+            "dm_stat": -0.134
+          },
+          {
+            "comparison": "track_b_vs_operator_vintage",
+            "bucket": "25_48h",
+            "n": 24657,
+            "mae_a": 27.7,
+            "mae_b": 26.47,
+            "delta_pct": 4.64,
+            "bootstrap_p": 0.04773,
+            "dm_p": 0.14175,
+            "dm_stat": 1.469
+          }
+        ]
+      }
+    ]
+  },
+  "leg2_context_operator_curve_2023_24": [
+    {
+      "bucket": "01_06h",
+      "mae": 18.2,
+      "n": 77592
+    },
+    {
+      "bucket": "07_24h",
+      "mae": 24.44,
+      "n": 232161
+    },
+    {
+      "bucket": "25_48h",
+      "mae": 25.96,
+      "n": 300941
+    }
+  ],
+  "leg3": {
+    "leg": "leg3_own_logged_fw48h",
+    "n_captures": 2,
+    "capture_span": [
+      "2026-11-21T10:05Z",
+      "2026-11-21T10:11Z"
+    ],
+    "comparisons": [
+      {
+        "model": "track_a",
+        "n": 0,
+        "note": "nothing matured yet"
+      },
+      {
+        "model": "track_b",
+        "n": 0,
+        "note": "nothing matured yet"
+      }
+    ]
+  },
+  "labels": {
+    "leg2": "archive vintages at matched issue times, 2026-07 onward; out-of-sample for models trained through 2024; no 2025 archive",
+    "leg3": "own hourly fw48h log: the only fully clean 48 h comparison; tiny n at build time, matures unattended"
+  }
+}
