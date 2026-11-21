@@ -39,9 +39,11 @@ Everything scheduled runs in GitHub Actions and writes versioned artifacts into 
 .
 ├── src/gbcarbon/          # Backend logic
 │   ├── neso.py            # -> NESO API client (stdlib only)
-│   └── vintage.py         # -> Hourly fw48h vintage capture
+│   ├── vintage.py         # -> Hourly fw48h vintage capture
+│   ├── watchdog.py        # -> Staleness assessment for alerting
+│   └── scoring.py         # -> Weekly compaction + prospective scoring
 ├── tests/                 # Pytest suite + live-API fixtures
-├── .github/workflows/     # ci, vintage-logger (+ watchdog, scoring to come)
+├── .github/workflows/     # ci, vintage-logger, watchdog, self-scoring
 ├── docs/decisions.md      # One-line log of design decisions
 ├── app.py                 # Streamlit entry point
 └── Makefile               # Task automation
@@ -49,7 +51,11 @@ Everything scheduled runs in GitHub Actions and writes versioned artifacts into 
 
 ## Operations
 
+Everything below runs unattended on GitHub Actions:
+
 - **vintage-logger** (hourly, minute 17): captures NESO's forward 48 h forecast to the `vintage-log` branch. A missed hour is a permanent gap — vintages cannot be backfilled — and is recorded in `vintages/manifest.json`.
+- **watchdog** (daily): opens or updates a **PIPELINE STALE** issue when the last capture is over 6 h old or the last nightly forecast over 48 h old, closes it with a comment on recovery, and pushes a keepalive commit if capture activity ever stops for 7 days (GitHub disables crons after 60 days of repo inactivity).
+- **self-scoring** (weekly, Sun): compacts closed months of daily vintage CSVs into monthly parquet, re-scores every matured logged forecast against published actuals from scratch (idempotent), and commits `results/prospective_scores.parquet` + `results/prospective_summary.json`.
 - **ci** (push/PR): ruff + pytest.
 
 ## Quick start

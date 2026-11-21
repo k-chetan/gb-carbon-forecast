@@ -1,0 +1,64 @@
+name: self-scoring
+
+on:
+  schedule:
+    - cron: "40 3 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: self-scoring
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v5
+
+      - run: uv sync --locked
+
+      - name: Fetch vintage log
+        run: |
+          git fetch origin vintage-log:vintage-log
+          git worktree add ../vintage vintage-log
+
+      - name: Compact vintages and score matured forecasts
+        run: uv run python -m gbcarbon.scoring --vintages ../vintage/vintages --results results
+
+      - name: Push vintage compaction
+        run: |
+          cd ../vintage
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "no compaction this week"
+            exit 0
+          fi
+          git commit -q -m "compact closed months $(date -u +%Y-%m-%d)"
+          for attempt in 1 2 3; do
+            if git push origin vintage-log; then exit 0; fi
+            git pull --rebase origin vintage-log
+          done
+          exit 1
+
+      - name: Push results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results
+          if git diff --cached --quiet; then
+            echo "results unchanged"
+            exit 0
+          fi
+          git commit -q -m "self-scoring $(date -u +%Y-%m-%dT%H:%MZ)"
+          for attempt in 1 2 3; do
+            if git push origin main; then exit 0; fi
+            git pull --rebase origin main
+          done
+          exit 1

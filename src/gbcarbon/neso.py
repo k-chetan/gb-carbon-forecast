@@ -58,6 +58,11 @@ def current() -> dict:
     return _get("/intensity")["data"][0]
 
 
+def intensity_range(from_utc: str, to_utc: str) -> list[dict]:
+    """Half-hour windows between two stamps (API limit: 14 days per call)."""
+    return _get(f"/intensity/{from_utc}/{to_utc}")["data"]
+
+
 def parse_windows(data: list[dict]) -> list[tuple[str, str, int | None]]:
     """Flatten API items to (window_start, window_end, forecast) tuples."""
     return [

@@ -1,0 +1,81 @@
+name: watchdog
+
+on:
+  schedule:
+    - cron: "41 5 * * *"
+  workflow_dispatch:
+    inputs:
+      max_capture_age_hours:
+        description: "Capture-age alert threshold in hours (0 forces the alert path: drill)"
+        required: false
+        default: "6"
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: watchdog
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Fetch vintage log
+        run: |
+          git fetch origin vintage-log:vintage-log
+          git worktree add ../vintage vintage-log
+
+      - name: Assess pipeline health
+        id: assess
+        run: >
+          PYTHONPATH=src python3 -m gbcarbon.watchdog
+          --vintages ../vintage/vintages
+          --forecasts forecasts
+          --max-capture-age-hours "${{ inputs.max_capture_age_hours || '6' }}"
+
+      - name: Raise or update the stale issue
+        if: steps.assess.outputs.status == 'stale'
+        env:
+          DETAIL: ${{ steps.assess.outputs.detail }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          body=$(printf 'The unattended pipeline looks stale.\n\n%s\n\nRun: %s' "$DETAIL" "$RUN_URL")
+          n=$(gh issue list --state open --search "PIPELINE STALE in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$n" ]; then
+            gh issue comment "$n" --body "$body"
+          else
+            gh issue create --title "PIPELINE STALE" --body "$body"
+          fi
+
+      - name: Close a recovered issue
+        if: steps.assess.outputs.status == 'ok'
+        env:
+          DETAIL: ${{ steps.assess.outputs.detail }}
+        run: |
+          n=$(gh issue list --state open --search "PIPELINE STALE in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$n" ]; then
+            gh issue comment "$n" --body "$(printf 'Recovered.\n\n%s' "$DETAIL")"
+            gh issue close "$n"
+          else
+            echo "healthy; no open issue"
+          fi
+
+      - name: Keepalive commit if capture activity stopped
+        run: |
+          last=$(git log -1 --format=%ct vintage-log)
+          now=$(date +%s)
+          days=$(( (now - last) / 86400 ))
+          if [ "$days" -ge 7 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -m "keepalive: no capture commit in $days days"
+            git push origin HEAD:main
+          else
+            echo "capture activity $days day(s) ago; no keepalive needed"
+          fi
