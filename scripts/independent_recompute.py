@@ -191,7 +191,9 @@ def main() -> int:
     anchors = json.loads(Path("results/anchor_reproduction.json").read_text())
     h25 = history[history["window_start"].dt.year == 2025].set_index("window_start")
     series = h25["actual"]
-    ref = series.copy()
+    # reference built from the FULL history so 1 January keeps its lag into 2024
+    full_series = history.set_index("window_start")["actual"]
+    ref = full_series.copy()
     ref.index = ref.index + pd.Timedelta(hours=24)
     err = (series - ref.reindex(series.index)).abs().dropna()
     mine = float(err.mean())

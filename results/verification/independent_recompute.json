@@ -1,0 +1,49 @@
+{
+  "seed": 20261121,
+  "all_pass": true,
+  "checks": [
+    {
+      "check": "A_feature_prediction_equivalence",
+      "n": 4000,
+      "max_abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "check": "B_sealed_mae_track_a",
+      "pipeline": 37.03816110146158,
+      "independent": 37.0382,
+      "pass": true
+    },
+    {
+      "check": "B_sealed_coverage_track_a",
+      "pipeline": 0.7863584474885845,
+      "independent": 0.7864,
+      "pass": true
+    },
+    {
+      "check": "B_sealed_mae_track_b",
+      "pipeline": 28.05140173543816,
+      "independent": 28.0514,
+      "pass": true
+    },
+    {
+      "check": "B_sealed_coverage_track_b",
+      "pipeline": 0.8020072298325723,
+      "independent": 0.802,
+      "pass": true
+    },
+    {
+      "check": "C_persistence_values",
+      "n": 4000,
+      "max_abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "check": "D_anchor_persistence24",
+      "pipeline": 38.85,
+      "independent": 38.85,
+      "pass": true
+    }
+  ],
+  "scope_note": "p50 path, metrics, baselines and anchors recomputed independently; interval values are covered by the coverage recomputation in B"
+}
