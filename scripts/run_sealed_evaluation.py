@@ -25,7 +25,7 @@ import pandas as pd
 
 sys.path.insert(0, "src")
 
-from gbcarbon import evaluate, features  # noqa: E402
+from gbcarbon import conformal, evaluate, features  # noqa: E402
 from gbcarbon.train import fold_metrics, gb_holiday_dates, issue_grid  # noqa: E402
 
 SEALED_DIR = Path("results/sealed")
@@ -72,8 +72,16 @@ def main() -> int:
 
     bundle_a = evaluate.ModelBundle(Path(args.run_a))
     bundle_b = evaluate.ModelBundle(Path(args.run_b))
-    preds_a = bundle_a.predict(frame)
-    preds_b = bundle_b.predict(frame)
+    # raw intervals + trailing-window conformal: offsets at each issue come
+    # only from already-matured pairs, admissible under the protocol
+    preds_a = conformal.apply_trailing(
+        bundle_a.predict(frame, calibrate=False),
+        seed_offsets=bundle_a.conformal["offsets"],
+    ).drop(columns=["conformal_widen"])
+    preds_b = conformal.apply_trailing(
+        bundle_b.predict(frame, calibrate=False),
+        seed_offsets=bundle_b.conformal["offsets"],
+    ).drop(columns=["conformal_widen"])
 
     base = evaluate.protocol_baselines(history, frame)
     merged = preds_a.rename(

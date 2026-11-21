@@ -52,7 +52,9 @@ class ModelBundle:
         self.conformal = conformal
         self.config = json.loads((self.run_dir / "run.json").read_text())["config"]
 
-    def predict(self, frame: pd.DataFrame) -> pd.DataFrame:
+    def predict(self, frame: pd.DataFrame, calibrate: bool = True) -> pd.DataFrame:
+        """Quantile predictions; ``calibrate=False`` returns raw intervals for
+        trailing-window conformal applied downstream."""
         cols = [c for c in self.config["features"] if c in frame.columns]
         missing = [c for c in self.config["features"] if c not in frame.columns]
         if missing:
@@ -60,22 +62,20 @@ class ModelBundle:
         preds = np.column_stack(
             [self.boosters[q].predict(frame[cols]) for q in QUANTILES]
         )
-        preds.sort(axis=1)
         out = frame[["issue_time", "target_time", "horizon_h", "y"]].copy()
-        out["p10"], out["p50"], out["p90"] = preds[:, 0], preds[:, 1], preds[:, 2]
-        factor = (
-            bucket_of(out["horizon_h"])
-            .map(self.conformal["offsets"])
-            .fillna(0.0)
-            .to_numpy()
-        )
-        if self.conformal.get("mode") == "scaled":
-            width = np.maximum((out["p90"] - out["p10"]).to_numpy(), 1.0)
-            widen = factor * width
-        else:
-            widen = factor
-        out["p10"] -= widen
-        out["p90"] += widen
+        p50 = preds[:, 1]
+        out["p10"] = np.minimum(preds[:, 0], p50)
+        out["p50"] = p50
+        out["p90"] = np.maximum(preds[:, 2], p50)
+        if calibrate:
+            widen = (
+                bucket_of(out["horizon_h"])
+                .map(self.conformal["offsets"])
+                .fillna(0.0)
+                .to_numpy()
+            )
+            out["p10"] -= widen
+            out["p90"] += widen
         return out
 
 

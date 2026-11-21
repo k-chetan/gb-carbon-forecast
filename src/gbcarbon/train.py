@@ -30,13 +30,13 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
-from gbcarbon import features, metrics
+from gbcarbon import conformal, features, metrics
+from gbcarbon.metrics import BUCKETS, bucket_of  # noqa: F401  (re-exported)
 
 SEALED_START = pd.Timestamp("2025-01-01", tz="UTC")
 SEALED_END = pd.Timestamp("2026-01-01", tz="UTC")
 EMBARGO = pd.Timedelta(days=7)
 QUANTILES = (0.1, 0.5, 0.9)
-BUCKETS = ((0.0, 6.0, "01_06h"), (6.0, 24.0, "07_24h"), (24.0, 48.0, "25_48h"))
 
 LGB_PARAMS = dict(
     n_estimators=600,
@@ -92,16 +92,6 @@ def quarter_folds(
         folds.append((cursor, cursor + offset))
         cursor = cursor - offset
     return sorted(folds)
-
-
-def bucket_of(horizons: pd.Series) -> pd.Series:
-    def lookup(h: float) -> str | None:
-        for low, high, name in BUCKETS:
-            if low < h <= high:
-                return name
-        return None
-
-    return horizons.map(lookup)
 
 
 def fold_metrics(frame: pd.DataFrame) -> dict:
@@ -174,9 +164,13 @@ def predict_quantiles(
     conformal: dict | None = None,
 ) -> pd.DataFrame:
     preds = np.column_stack([models[q].predict(frame[cols]) for q in QUANTILES])
-    preds.sort(axis=1)  # enforce non-crossing
     out = frame[["issue_time", "target_time", "horizon_h", "y"]].copy()
-    out["p10"], out["p50"], out["p90"] = preds[:, 0], preds[:, 1], preds[:, 2]
+    # non-crossing by clipping the interval heads to the median — never by
+    # sorting, which silently swaps heads trained on different windows
+    p50 = preds[:, 1]
+    out["p10"] = np.minimum(preds[:, 0], p50)
+    out["p50"] = p50
+    out["p90"] = np.maximum(preds[:, 2], p50)
     if conformal:
         factor = (
             bucket_of(out["horizon_h"]).map(conformal["offsets"]).fillna(0.0)
@@ -333,14 +327,13 @@ def main(argv: list[str] | None = None) -> int:
             ]
             if len(train) < 10_000 or len(val) == 0:
                 continue
-            models, offsets = fit_models(
-                train, cols, conformal_mode=args.conformal_mode
-            )
-            preds = predict_quantiles(models, val, cols, offsets)
+            models, static_conf = fit_models(train, cols, conformal_mode="additive")
+            raw = predict_quantiles(models, val, cols)
+            preds = conformal.apply_trailing(raw, seed_offsets=static_conf["offsets"])
             preds["fold"] = str(fold_start.date())
             fold_rows.append(preds)
             report = fold_metrics(preds)
-            report["conformal_offsets"] = offsets
+            report["conformal_seed"] = static_conf
             fold_reports[str(fold_start.date())] = report
             print(
                 f"fold {fold_start.date()}: {report['mae_p50']:.2f} MAE(p50) "

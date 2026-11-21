@@ -1,0 +1,309 @@
+{
+  "config": {
+    "run_id": "20261121T111334Z_trackB_common-s",
+    "track": "B",
+    "train_start": "2024-04-01",
+    "train_end": "2025-01-01",
+    "issue_step_h": 1.0,
+    "cv_folds": 6,
+    "fold_freq": "month",
+    "deployed_refit": false,
+    "conformal_mode": "scaled",
+    "embargo_days": 7,
+    "quantiles": [
+      0.1,
+      0.5,
+      0.9
+    ],
+    "lgb_params": {
+      "n_estimators": 600,
+      "learning_rate": 0.05,
+      "num_leaves": 127,
+      "min_child_samples": 100,
+      "subsample": 0.9,
+      "subsample_freq": 1,
+      "colsample_bytree": 0.9,
+      "random_state": 42,
+      "verbose": -1
+    },
+    "n_samples": 627504,
+    "n_features": 44,
+    "features": [
+      "lag_0h",
+      "lag_1h",
+      "lag_2h",
+      "lag_3h",
+      "lag_6h",
+      "lag_12h",
+      "lag_24h",
+      "lag_48h",
+      "lag_7d",
+      "roll_24h",
+      "roll_7d",
+      "trend_24h",
+      "horizon_h",
+      "t_hour_sin",
+      "t_hour_cos",
+      "t_hour",
+      "t_dow",
+      "t_month",
+      "t_doy",
+      "t_holiday",
+      "wind100_previous_day1_east_anglia_offshore",
+      "wind100_previous_day1_england_southwest",
+      "wind100_previous_day1_irish_sea",
+      "wind100_previous_day1_london",
+      "wind100_previous_day1_offshore_dogger",
+      "wind100_previous_day1_scotland_highlands",
+      "wind100_previous_day1_scotland_south",
+      "wind100_previous_day1_wales_mid",
+      "temperature_2m_mean_previous_day1",
+      "wind_speed_10m_mean_previous_day1",
+      "cloud_cover_mean_previous_day1",
+      "shortwave_radiation_mean_previous_day1",
+      "wind100_previous_day2_east_anglia_offshore",
+      "wind100_previous_day2_england_southwest",
+      "wind100_previous_day2_irish_sea",
+      "wind100_previous_day2_london",
+      "wind100_previous_day2_offshore_dogger",
+      "wind100_previous_day2_scotland_highlands",
+      "wind100_previous_day2_scotland_south",
+      "wind100_previous_day2_wales_mid",
+      "temperature_2m_mean_previous_day2",
+      "wind_speed_10m_mean_previous_day2",
+      "cloud_cover_mean_previous_day2",
+      "shortwave_radiation_mean_previous_day2"
+    ],
+    "git_hash": "883b99596c914609337a3fae100e8abb275c48b7",
+    "seed": 42
+  },
+  "computed_utc": "2026-11-21T11:13:37.362741+00:00",
+  "cv": {
+    "folds": {
+      "2024-07-01": {
+        "n": 71424,
+        "mae_p50": 24.431909323693173,
+        "pinball_q10": 7.9680044671638655,
+        "pinball_q50": 12.215954661846586,
+        "pinball_q90": 9.576904291939094,
+        "coverage_80": 0.263328853046595,
+        "by_bucket": {
+          "01_06h": {
+            "mae_p50": 24.26618144498867,
+            "coverage_80": 0.29054659498207885,
+            "n": 8928
+          },
+          "07_24h": {
+            "mae_p50": 24.384073299592234,
+            "coverage_80": 0.29435483870967744,
+            "n": 26784
+          },
+          "25_48h": {
+            "mae_p50": 24.509218311445004,
+            "coverage_80": 0.2332549283154122,
+            "n": 35712
+          }
+        },
+        "conformal_offsets": {
+          "mode": "scaled",
+          "offsets": {
+            "01_06h": 0.005978293717662135,
+            "07_24h": 0.0038232869160462037,
+            "25_48h": 0.017326763093296553
+          }
+        }
+      },
+      "2024-08-01": {
+        "n": 71424,
+        "mae_p50": 18.49497796659089,
+        "pinball_q10": 5.599150381438087,
+        "pinball_q50": 9.247488983295446,
+        "pinball_q90": 4.955876248780333,
+        "coverage_80": 0.45091285842293904,
+        "by_bucket": {
+          "01_06h": {
+            "mae_p50": 18.086988312467106,
+            "coverage_80": 0.4607974910394265,
+            "n": 8928
+          },
+          "07_24h": {
+            "mae_p50": 18.24896022151739,
+            "coverage_80": 0.45217293906810035,
+            "n": 26784
+          },
+          "25_48h": {
+            "mae_p50": 18.781488688926963,
+            "coverage_80": 0.44749663978494625,
+            "n": 35712
+          }
+        },
+        "conformal_offsets": {
+          "mode": "scaled",
+          "offsets": {
+            "01_06h": 0.025271932919157608,
+            "07_24h": 0.018453844484902587,
+            "25_48h": 0.034588606050591476
+          }
+        }
+      },
+      "2024-09-01": {
+        "n": 69120,
+        "mae_p50": 28.097539588457266,
+        "pinball_q10": 4.678741793055103,
+        "pinball_q50": 14.048769794228633,
+        "pinball_q90": 12.402193224871553,
+        "coverage_80": 0.3740306712962963,
+        "by_bucket": {
+          "01_06h": {
+            "mae_p50": 27.692042748822818,
+            "coverage_80": 0.3951388888888889,
+            "n": 8640
+          },
+          "07_24h": {
+            "mae_p50": 28.107588437517744,
+            "coverage_80": 0.3824845679012346,
+            "n": 25920
+          },
+          "25_48h": {
+            "mae_p50": 28.191377161570514,
+            "coverage_80": 0.3624131944444444,
+            "n": 34560
+          }
+        },
+        "conformal_offsets": {
+          "mode": "scaled",
+          "offsets": {
+            "01_06h": 0.017738962888803483,
+            "07_24h": 0.015362009248730569,
+            "25_48h": 0.02277601614460537
+          }
+        }
+      },
+      "2024-10-01": {
+        "n": 71424,
+        "mae_p50": 35.86168323120182,
+        "pinball_q10": 6.030723656341637,
+        "pinball_q50": 17.93084161560091,
+        "pinball_q90": 20.35123859319764,
+        "coverage_80": 0.24672379032258066,
+        "by_bucket": {
+          "01_06h": {
+            "mae_p50": 35.28953612395597,
+            "coverage_80": 0.25,
+            "n": 8928
+          },
+          "07_24h": {
+            "mae_p50": 35.700352325259686,
+            "coverage_80": 0.244026284348865,
+            "n": 26784
+          },
+          "25_48h": {
+            "mae_p50": 36.125718187469886,
+            "coverage_80": 0.24792786738351255,
+            "n": 35712
+          }
+        },
+        "conformal_offsets": {
+          "mode": "scaled",
+          "offsets": {
+            "01_06h": 0.02735351060195184,
+            "07_24h": 0.02145714598343653,
+            "25_48h": 0.03622369862523424
+          }
+        }
+      },
+      "2024-11-01": {
+        "n": 69120,
+        "mae_p50": 36.02209476120402,
+        "pinball_q10": 6.08140595186069,
+        "pinball_q50": 18.01104738060201,
+        "pinball_q90": 14.488704731847793,
+        "coverage_80": 0.30947627314814813,
+        "by_bucket": {
+          "01_06h": {
+            "mae_p50": 36.08709509489653,
+            "coverage_80": 0.30752314814814813,
+            "n": 8640
+          },
+          "07_24h": {
+            "mae_p50": 36.10806735492793,
+            "coverage_80": 0.3055555555555556,
+            "n": 25920
+          },
+          "25_48h": {
+            "mae_p50": 35.94136523248797,
+            "coverage_80": 0.3129050925925926,
+            "n": 34560
+          }
+        },
+        "conformal_offsets": {
+          "mode": "scaled",
+          "offsets": {
+            "01_06h": 0.02253168695590792,
+            "07_24h": 0.02063429501535342,
+            "25_48h": 0.0259461338300816
+          }
+        }
+      },
+      "2024-12-01": {
+        "n": 66816,
+        "mae_p50": 29.159670700942506,
+        "pinball_q10": 8.108750422980275,
+        "pinball_q50": 14.579835350471253,
+        "pinball_q90": 11.538671391630428,
+        "coverage_80": 0.24717133620689655,
+        "by_bucket": {
+          "01_06h": {
+            "mae_p50": 28.682475659556502,
+            "coverage_80": 0.2616139846743295,
+            "n": 8352
+          },
+          "07_24h": {
+            "mae_p50": 29.017119652073585,
+            "coverage_80": 0.2513170498084291,
+            "n": 25056
+          },
+          "25_48h": {
+            "mae_p50": 29.385882747940702,
+            "coverage_80": 0.2404513888888889,
+            "n": 33408
+          }
+        },
+        "conformal_offsets": {
+          "mode": "scaled",
+          "offsets": {
+            "01_06h": 0.026159086986475944,
+            "07_24h": 0.02344535938550084,
+            "25_48h": 0.032750474730451236
+          }
+        }
+      }
+    },
+    "pooled": {
+      "n": 419328,
+      "mae_p50": 28.635522895512274,
+      "pinball_q10": 6.403804550918424,
+      "pinball_q50": 14.317761447756137,
+      "pinball_q90": 12.21292858357303,
+      "coverage_80": 0.31573136065323565,
+      "by_bucket": {
+        "01_06h": {
+          "mae_p50": 28.30818577891474,
+          "coverage_80": 0.32806776556776557,
+          "n": 52416
+        },
+        "07_24h": {
+          "mae_p50": 28.55110497209315,
+          "coverage_80": 0.3221789784289784,
+          "n": 157248
+        },
+        "25_48h": {
+          "mae_p50": 28.780670617226004,
+          "coverage_80": 0.3078115460927961,
+          "n": 209664
+        }
+      }
+    }
+  },
+  "duration_s": 339.9
+}

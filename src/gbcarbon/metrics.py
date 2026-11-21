@@ -14,6 +14,19 @@ import numpy as np
 import pandas as pd
 
 DAY_STEPS = 48  # half-hour steps per day
+BUCKETS = [(0.0, 6.0, "01_06h"), (6.0, 24.0, "07_24h"), (24.0, 48.0, "25_48h")]
+
+
+def bucket_of(horizons: pd.Series) -> pd.Series:
+    """Horizon bucket label per sample (None outside 0 < h <= 48)."""
+
+    def lookup(h: float) -> str | None:
+        for low, high, name in BUCKETS:
+            if low < h <= high:
+                return name
+        return None
+
+    return horizons.map(lookup)
 
 
 def mae(errors: pd.Series | np.ndarray) -> float:

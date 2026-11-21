@@ -29,7 +29,7 @@ import pandas as pd
 
 sys.path.insert(0, "src")
 
-from gbcarbon import evaluate, features  # noqa: E402
+from gbcarbon import conformal, evaluate, features  # noqa: E402
 from gbcarbon.scoring import load_vintages  # noqa: E402
 from gbcarbon.train import gb_holiday_dates  # noqa: E402
 
@@ -47,7 +47,13 @@ def model_predictions_at(
     frame = features.build_training_frame(
         history, issues, holiday_dates=hol, weather_prev=weather
     )
-    return {name: bundle.predict(frame) for name, bundle in bundles.items()}
+    return {
+        name: conformal.apply_trailing(
+            bundle.predict(frame, calibrate=False),
+            seed_offsets=bundle.conformal["offsets"],
+        )
+        for name, bundle in bundles.items()
+    }
 
 
 def leg_rows(
