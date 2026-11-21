@@ -1,8 +1,14 @@
 {
   "created_utc": "2026-11-21T10:05Z",
-  "gaps": [],
-  "last_capture_utc": "2026-11-21T13:56Z",
+  "gaps": [
+    {
+      "after": "2026-11-21T13:56Z",
+      "before": "2026-11-21T16:42Z",
+      "hours": 2.8
+    }
+  ],
+  "last_capture_utc": "2026-11-21T16:42Z",
   "last_rows": 96,
   "note": "Gaps are permanent: past vintages cannot be backfilled.",
-  "total_captures": 4
+  "total_captures": 5
 }
