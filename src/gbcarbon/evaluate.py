@@ -46,7 +46,10 @@ class ModelBundle:
             q: lgb.Booster(model_file=str(self.run_dir / f"model_q{int(q * 100)}.txt"))
             for q in QUANTILES
         }
-        self.offsets = json.loads((self.run_dir / "conformal.json").read_text())
+        conformal = json.loads((self.run_dir / "conformal.json").read_text())
+        if "offsets" not in conformal:  # legacy flat additive format
+            conformal = {"mode": "additive", "offsets": conformal}
+        self.conformal = conformal
         self.config = json.loads((self.run_dir / "run.json").read_text())["config"]
 
     def predict(self, frame: pd.DataFrame) -> pd.DataFrame:
@@ -60,7 +63,17 @@ class ModelBundle:
         preds.sort(axis=1)
         out = frame[["issue_time", "target_time", "horizon_h", "y"]].copy()
         out["p10"], out["p50"], out["p90"] = preds[:, 0], preds[:, 1], preds[:, 2]
-        widen = bucket_of(out["horizon_h"]).map(self.offsets).fillna(0.0).to_numpy()
+        factor = (
+            bucket_of(out["horizon_h"])
+            .map(self.conformal["offsets"])
+            .fillna(0.0)
+            .to_numpy()
+        )
+        if self.conformal.get("mode") == "scaled":
+            width = np.maximum((out["p90"] - out["p10"]).to_numpy(), 1.0)
+            widen = factor * width
+        else:
+            widen = factor
         out["p10"] -= widen
         out["p90"] += widen
         return out

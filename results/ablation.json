@@ -1,0 +1,98 @@
+{
+  "computed_utc": "2026-11-21T11:05Z",
+  "run_a": {
+    "id": "20261121T104907Z_trackA_common",
+    "track": "A"
+  },
+  "run_b": {
+    "id": "20261121T105548Z_trackB_common",
+    "track": "B"
+  },
+  "note": "negative delta_pct means B (weather) beats A (lags+calendar); paired on identical issue/target times",
+  "comparisons": [
+    {
+      "bucket": "overall",
+      "n_pairs": 419328,
+      "mae_a": 44.49,
+      "mae_b": 28.64,
+      "delta_pct": -35.63,
+      "coverage80_a": 0.786,
+      "coverage80_b": 0.318,
+      "block_bootstrap": {
+        "mean_diff": -15.85,
+        "p_value": 0.0,
+        "ci95": [
+          -16.48,
+          -15.195
+        ]
+      },
+      "dm_hac": {
+        "stat": -35.139,
+        "p_value": 0.0
+      }
+    },
+    {
+      "bucket": "01_06h",
+      "n_pairs": 52416,
+      "mae_a": 41.96,
+      "mae_b": 28.31,
+      "delta_pct": -32.54,
+      "coverage80_a": 0.774,
+      "coverage80_b": 0.329,
+      "block_bootstrap": {
+        "mean_diff": -13.655,
+        "p_value": 0.0,
+        "ci95": [
+          -15.302,
+          -12.013
+        ]
+      },
+      "dm_hac": {
+        "stat": -16.154,
+        "p_value": 0.0
+      }
+    },
+    {
+      "bucket": "07_24h",
+      "n_pairs": 157248,
+      "mae_a": 44.19,
+      "mae_b": 28.55,
+      "delta_pct": -35.4,
+      "coverage80_a": 0.789,
+      "coverage80_b": 0.324,
+      "block_bootstrap": {
+        "mean_diff": -15.643,
+        "p_value": 0.0,
+        "ci95": [
+          -16.684,
+          -14.631
+        ]
+      },
+      "dm_hac": {
+        "stat": -29.548,
+        "p_value": 0.0
+      }
+    },
+    {
+      "bucket": "25_48h",
+      "n_pairs": 209664,
+      "mae_a": 45.33,
+      "mae_b": 28.78,
+      "delta_pct": -36.51,
+      "coverage80_a": 0.786,
+      "coverage80_b": 0.311,
+      "block_bootstrap": {
+        "mean_diff": -16.554,
+        "p_value": 0.0,
+        "ci95": [
+          -17.403,
+          -15.685
+        ]
+      },
+      "dm_hac": {
+        "stat": -25.995,
+        "p_value": 0.0
+      }
+    }
+  ]
+}

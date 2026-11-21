@@ -141,8 +141,11 @@ def fit_quantiles(
 
 
 def fit_models(
-    full: pd.DataFrame, cols: list[str], calib_frac: float = 0.15
-) -> tuple[dict[float, lgb.LGBMRegressor], dict[str, float]]:
+    full: pd.DataFrame,
+    cols: list[str],
+    calib_frac: float = 0.15,
+    conformal_mode: str = "additive",
+) -> tuple[dict[float, lgb.LGBMRegressor], dict]:
     """Median on the full window; interval heads on the core, CQR on the tail.
 
     CQR only recalibrates p10/p90, so the median may use every sample —
@@ -160,22 +163,29 @@ def fit_models(
     median = lgb.LGBMRegressor(objective="quantile", alpha=0.5, **LGB_PARAMS)
     median.fit(full[cols], full["y"])
     models[0.5] = median
-    offsets = conformal_offsets(models, calib, cols)
-    return models, offsets
+    conformal = conformal_offsets(models, calib, cols, mode=conformal_mode)
+    return models, conformal
 
 
 def predict_quantiles(
     models: dict[float, lgb.LGBMRegressor],
     frame: pd.DataFrame,
     cols: list[str],
-    offsets: dict[str, float] | None = None,
+    conformal: dict | None = None,
 ) -> pd.DataFrame:
     preds = np.column_stack([models[q].predict(frame[cols]) for q in QUANTILES])
     preds.sort(axis=1)  # enforce non-crossing
     out = frame[["issue_time", "target_time", "horizon_h", "y"]].copy()
     out["p10"], out["p50"], out["p90"] = preds[:, 0], preds[:, 1], preds[:, 2]
-    if offsets:
-        widen = bucket_of(out["horizon_h"]).map(offsets).fillna(0.0).to_numpy()
+    if conformal:
+        factor = (
+            bucket_of(out["horizon_h"]).map(conformal["offsets"]).fillna(0.0)
+        ).to_numpy()
+        if conformal.get("mode") == "scaled":
+            width = np.maximum((out["p90"] - out["p10"]).to_numpy(), 1.0)
+            widen = factor * width
+        else:
+            widen = factor
         out["p10"] = out["p10"] - widen
         out["p90"] = out["p90"] + widen
     return out
@@ -195,21 +205,31 @@ def conformal_offsets(
     calib: pd.DataFrame,
     cols: list[str],
     alpha: float = 0.2,
-) -> dict[str, float]:
-    """Per-horizon-bucket CQR offsets: the finite-sample (1-alpha) quantile of
-    conformity scores E = max(p10 - y, y - p90) on the calibration slice."""
+    mode: str = "additive",
+) -> dict:
+    """Per-horizon-bucket CQR correction from the calibration slice.
+
+    ``additive``: the finite-sample (1-alpha) quantile of conformity scores
+    E = max(p10 - y, y - p90). ``scaled``: the same on width-normalized scores
+    E / (p90 - p10), applied multiplicatively at predict time — intervals then
+    widen in proportion to the model's own conditional spread, which transfers
+    across weather regimes far better for sharp models.
+    """
     preds = predict_quantiles(models, calib, cols)
-    scores = np.maximum(preds["p10"] - preds["y"], preds["y"] - preds["p90"]).to_numpy()
+    raw = np.maximum(preds["p10"] - preds["y"], preds["y"] - preds["p90"]).to_numpy()
+    if mode == "scaled":
+        width = np.maximum((preds["p90"] - preds["p10"]).to_numpy(), 1.0)
+        raw = raw / width
     buckets = bucket_of(preds["horizon_h"])
     offsets: dict[str, float] = {}
     for bucket in sorted(buckets.dropna().unique()):
-        s = np.sort(scores[(buckets == bucket).to_numpy()])
+        s = np.sort(raw[(buckets == bucket).to_numpy()])
         n = len(s)
         if n == 0:
             continue
         rank = min(int(np.ceil((1 - alpha) * (n + 1))) - 1, n - 1)
         offsets[str(bucket)] = float(s[rank])
-    return offsets
+    return {"mode": mode, "offsets": offsets}
 
 
 def load_frame(args: argparse.Namespace) -> pd.DataFrame:
@@ -245,6 +265,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--issue-step-h", type=float, default=2.0)
     parser.add_argument("--cv-folds", type=int, default=6)
     parser.add_argument("--fold-freq", choices=["quarter", "month"], default="quarter")
+    parser.add_argument(
+        "--conformal-mode", choices=["additive", "scaled"], default="additive"
+    )
     parser.add_argument("--cv", action="store_true", help="rolling-origin validation")
     parser.add_argument(
         "--deployed-refit",
@@ -285,6 +308,7 @@ def main(argv: list[str] | None = None) -> int:
         "cv_folds": args.cv_folds,
         "fold_freq": args.fold_freq,
         "deployed_refit": bool(args.deployed_refit),
+        "conformal_mode": args.conformal_mode,
         "embargo_days": EMBARGO.days,
         "quantiles": list(QUANTILES),
         "lgb_params": LGB_PARAMS,
@@ -309,7 +333,9 @@ def main(argv: list[str] | None = None) -> int:
             ]
             if len(train) < 10_000 or len(val) == 0:
                 continue
-            models, offsets = fit_models(train, cols)
+            models, offsets = fit_models(
+                train, cols, conformal_mode=args.conformal_mode
+            )
             preds = predict_quantiles(models, val, cols, offsets)
             preds["fold"] = str(fold_start.date())
             fold_rows.append(preds)
@@ -329,7 +355,7 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     if args.final:
-        models, offsets = fit_models(frame, cols)
+        models, offsets = fit_models(frame, cols, conformal_mode=args.conformal_mode)
         for q, model in models.items():
             model.booster_.save_model(run_dir / f"model_q{int(q * 100)}.txt")
         (run_dir / "conformal.json").write_text(json.dumps(offsets, indent=2) + "\n")
