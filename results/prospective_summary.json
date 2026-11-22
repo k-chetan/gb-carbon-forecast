@@ -5,30 +5,32 @@
       "07_24h": 1.0
     },
     "mae_by_bucket": {
-      "01_06h": 16.18,
-      "07_24h": 9.62
+      "01_06h": 18.26,
+      "07_24h": 13.43
     },
-    "n_forecasts": 1,
-    "overall_mae": 11.87,
-    "scored_windows": 35,
+    "n_forecasts": 3,
+    "overall_mae": 15.38,
+    "scored_windows": 57,
     "status": "live"
   },
   "neso_fw48h": {
     "mae_by_bucket": {
-      "01_06h": 17.37,
-      "07_24h": 21.71
+      "01_06h": 15.18,
+      "07_24h": 16.86,
+      "25_48h": 12.5
     },
     "n_by_bucket": {
-      "01_06h": 104,
-      "07_24h": 129
+      "01_06h": 131,
+      "07_24h": 220,
+      "25_48h": 4
     },
-    "overall_mae": 19.77,
-    "scored_windows": 233
+    "overall_mae": 16.19,
+    "scored_windows": 355
   },
-  "updated_utc": "2026-11-22T06:23Z",
+  "updated_utc": "2026-11-22T11:57Z",
   "vintages": {
     "first_capture_utc": "2026-11-21T10:05Z",
-    "last_capture_utc": "2026-11-22T06:17Z",
-    "total_captures": 10
+    "last_capture_utc": "2026-11-22T08:52Z",
+    "total_captures": 12
   }
 }
