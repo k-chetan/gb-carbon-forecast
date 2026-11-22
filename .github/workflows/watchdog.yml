@@ -2,9 +2,10 @@ name: watchdog
 
 on:
   schedule:
-    # daily, after the nightly forecast (03:07) and the Sunday scoring
-    # (03:40) have had time to finish
+    # morning check after the nightly forecast and Sunday scoring slots;
+    # evening check doubles alerting odds against scheduler drops
     - cron: "41 5 * * *"
+    - cron: "41 17 * * *"
   workflow_dispatch:
     inputs:
       max_capture_age_hours:

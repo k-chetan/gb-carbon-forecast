@@ -3,8 +3,10 @@ name: nightly-forecast
 on:
   schedule:
     # 03:07 UTC: yesterday's actuals are published and the previous-day
-    # weather runs cover the full 48 h span
+    # weather runs cover the full 48 h span. The 04:37 entry is a second
+    # chance against scheduler drops; a double issue just adds a vintage.
     - cron: "7 3 * * *"
+    - cron: "37 4 * * *"
   workflow_dispatch:
 
 permissions:
