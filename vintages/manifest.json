@@ -62,8 +62,8 @@
       "hours": 9.6
     }
   ],
-  "last_capture_utc": "2026-11-24T00:59Z",
+  "last_capture_utc": "2026-11-24T02:36Z",
   "last_rows": 96,
   "note": "Gaps are permanent: past vintages cannot be backfilled.",
-  "total_captures": 22
+  "total_captures": 23
 }
