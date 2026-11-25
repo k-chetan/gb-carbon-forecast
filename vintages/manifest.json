@@ -75,10 +75,15 @@
       "after": "2026-11-24T23:17Z",
       "before": "2026-11-25T04:56Z",
       "hours": 5.7
+    },
+    {
+      "after": "2026-11-25T05:41Z",
+      "before": "2026-11-25T13:26Z",
+      "hours": 7.8
     }
   ],
-  "last_capture_utc": "2026-11-25T05:41Z",
+  "last_capture_utc": "2026-11-25T13:26Z",
   "last_rows": 96,
   "note": "Gaps are permanent: past vintages cannot be backfilled.",
-  "total_captures": 29
+  "total_captures": 30
 }
