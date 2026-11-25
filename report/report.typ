@@ -99,6 +99,20 @@ EV charging, heating cycles and batch computation could exploit these swings,
 but only if forecasts exist far enough ahead to plan against, and only if
 their uncertainty is described honestly.
 
+The size of the opportunity can be read off the 2025 actuals used later in
+this report. On the median day the cleanest and dirtiest three-hour windows
+differ by 82 gCO#sub[2]/kWh, and the within-day peak-to-trough ratio exceeds
+two on 68% of days. A single 21 kWh overnight EV charge timed into the day's
+cleanest three hours instead of its dirtiest is therefore attributed about
+1.7 kg CO#sub[2]e less, the same arithmetic repeats every cycle for heat
+storage, deferrable compute and battery dispatch, and it compounds across
+fleets. These decisions are committed four to thirty-six hours ahead against
+a deadline: the car must be charged by morning whether or not a cleaner
+window arrives. A point forecast cannot price that risk; a calibrated band
+can, which is why the forecaster built here is probabilistic. The same
+forward view is what hourly carbon accounting needs when consumption is
+matched to clean supply hour by hour instead of annually.
+
 The grid operator, NESO, publishes forecasts through its free Carbon
 Intensity API @neso2026api. Evaluating a new forecaster against the operator
 runs into a provenance problem, however. The operator's _stored_ forecast
@@ -501,7 +515,9 @@ inside the training years.
   long-horizon signal evidently comes from the weather inputs. There is a
   crossover, though: below 6 hours Track A is the better model (20.8 against
   27.8), where recent lags dominate and Track B is limited by its short
-  training window. An operational system could switch between the two by
+  training window: the fitted booster spends only about 4% of its split gain
+  on the lag features, against 13% on the single strongest day-2 wind input.
+  An operational system could switch between the two by
   horizon; the deployed model accepts the short-horizon cost to keep the
   setup simple. Finally, Track B's intervals come out very close to nominal
   coverage (80.0 to 80.3% in every bucket), which is the direct result of
@@ -575,15 +591,16 @@ this section from whatever has accumulated by then.
 = The automated evaluation pipeline <instrument>
 
 Time-dependent evidence in this project is collected by scheduled jobs
-rather than by hand. Four of them run unattended on repository
+rather than by hand. Five of them run unattended on repository
 infrastructure (GitHub Actions) and write versioned artifacts that both the
 application and this report read.
 
-- _vintage-logger_ (hourly, minute 17) captures the operator's forward
+- _vintage-logger_ (hourly, minutes 17 and 47) captures the operator's forward
   48-hour national curve, about 96 half-hour windows per capture, to a
   dedicated branch. A manifest records capture counts and any gaps, and gaps
   are permanent because vintages cannot be re-requested.
-- _nightly-forecast_ (03:07 UTC) issues the deployed model's 48-hour
+- _nightly-forecast_ (03:07 UTC, second slot 04:37) issues the deployed
+  model's 48-hour
   probabilistic forecast. It writes a stable JSON file plus a dated copy
   that is never modified afterwards; the dated copies are the project's own
   vintages and are scored as they mature.
@@ -591,15 +608,26 @@ application and this report read.
   matured logged forecast against published actuals, and folds closed months
   of the vintage log into parquet files. Because each run is a full
   recompute, a missed week heals itself on the next run.
-- _watchdog_ (daily) opens or updates a "PIPELINE STALE" issue on the
+- _watchdog_ (twice daily) opens or updates a "PIPELINE STALE" issue on the
   repository when the last capture is more than 6 hours old or the last
   forecast more than 48 hours old, closes it again once things recover, and
   pushes a keepalive commit if capture activity ever stops for 7 days
   (GitHub disables schedules after 60 days of repository inactivity). Issues
   on one's own repository generate e-mail notifications, so a broken
   pipeline reaches the owner without anyone watching dashboards.
+- _keepalive-visit_ (twice daily) performs a real headless-browser visit to
+  the deployed application, because the application host suspends apps by
+  visit count, not repository activity.
 
-The alert path was tested live on build day with a deliberately failed
+The platform's schedule delivery proved best-effort in the repository's
+first days: occurrences were dropped or ran hours late while manually
+started runs always ran, which is why every job carries two staggered
+schedule entries. All five jobs are idempotent or append-only, so a double
+fire is harmless, and whatever capture gaps remain are recorded in the
+manifest rather than hidden. The watchdog caught two such gaps in the first
+week, opened an issue for each and closed them on recovery.
+
+The alert path was also tested live on build day with a deliberately failed
 capture, a drill that opened a real issue, a recovery run that closed it,
 and a normal capture afterwards. For routine monitoring, the logger badge on
 the repository README is enough to check about once a month.
@@ -627,8 +655,9 @@ licences, assumptions, limitations and the split between the evaluated and
 the deployed model. The deployed model is a refit of Track B on all data
 through the present; every number in this report comes from the
 sealed-evaluated models, and the report never cites the deployed one.
-Free-tier hosting sleeps when idle and wakes from a button in about thirty
-seconds.
+Free-tier hosting suspends apps that receive no visits, so the scheduled
+headless visit above doubles as the wake mechanism; an app that is asleep
+anyway wakes from a button in about thirty seconds.
 
 #if data.status.fan_example [
   #figure(
@@ -653,9 +682,12 @@ seconds.
 
 The research question gets a positive answer, with a boundary. A model built
 on open data can match the grid operator at 7-48 hour horizons, which are
-the horizons that matter for day-ahead load shifting. It cannot match the
-operator inside 6 hours, where near-real-time generation telemetry decides
-the outcome. The ablation locates the mechanism: forecast vintages, of wind
+the horizons that matter for day-ahead load shifting. Those are the horizons
+at which an overnight charge, a heat-storage cycle or a deferrable batch job
+is committed, and the introduction's arithmetic, 82 gCO#sub[2]/kWh between
+the median day's cleanest and dirtiest three-hour windows, is the per-cycle
+stake. It cannot match the operator inside 6 hours, where near-real-time
+generation telemetry decides the outcome. The ablation locates the mechanism: forecast vintages, of wind
 above all, carry most of the long-horizon signal. The two ablation deltas
 (-41.9% on the matched common window, -24.3% against a Track A trained on
 seven years) differ for an understandable reason: lag models improve with
@@ -668,7 +700,8 @@ quantile heads under-covered badly (0.50), and every static correction
 decayed when the regime shifted. Only recalibration from trailing matured
 errors, which the automated pipeline produces anyway, held nominal coverage
 over a full unseen year. The sealed coverage of 80.2% against a nominal 80%
-is in some ways the most important single number in the report.
+is in some ways the most important single number in the report: every
+scheduling decision taken on the band inherits exactly that reliability.
 
 Further limitations:
 
@@ -736,7 +769,8 @@ scripts/             verify_weather_coverage.py cross_check_history.py
                      build_community_vintages.py reproduce_anchors.py
                      eda.py ablation.py run_sealed_evaluation.py
                      score_operator_legs.py report_figures.py
-.github/workflows/   vintage-logger ci watchdog self-scoring nightly-forecast
+.github/workflows/   vintage-logger ci watchdog self-scoring
+                     nightly-forecast keepalive-visit
 data/raw/            manifested immutable pulls (+ manifest.json)
 data/external/       community vintages + per-month audit
 results/             eda/ sealed/ legs/ ablation.json prospective summaries
