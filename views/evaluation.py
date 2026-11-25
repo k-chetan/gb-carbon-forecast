@@ -95,13 +95,20 @@ def show() -> None:
     with col_a:
         common.section_card("Headline metrics", "sealed 2025 unless marked live")
         if sealed:
+            short = {
+                "A_vs_persistence": "A vs persistence",
+                "B_vs_persistence": "B vs persistence",
+                "B_vs_A_weather_ablation": "B vs A (weather)",
+                "A_vs_neso_stored_LEG1_not_like_for_like": "A vs stored †",
+                "B_vs_neso_stored_LEG1_not_like_for_like": "B vs stored †",
+            }
             rows = []
             for row in sealed.get("comparisons", []):
                 if row["bucket"] != "overall":
                     continue
                 rows.append(
                     {
-                        "comparison": row["comparison"],
+                        "comparison": short.get(row["comparison"], row["comparison"]),
                         "model": row["mae_a"],
                         "reference": row["mae_b"],
                         "Δ%": row["delta_pct"],
@@ -109,6 +116,10 @@ def show() -> None:
                     }
                 )
             st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+            st.caption(
+                "† the stored series is near-final (Leg 1): context, "
+                "not a like-for-like baseline."
+            )
             cov = sealed["models"]["track_b"]["metrics"]["coverage_80"]
             st.markdown(f"**80% interval coverage (Track B):** {cov:.1%}")
         else:
@@ -147,7 +158,7 @@ def show() -> None:
             elif key == "leg3" and legs:
                 leg3 = legs["leg3"]
                 st.markdown(
-                    f"- captures so far: **{leg3['n_captures']}** "
+                    f"- captures at last scoring: **{leg3['n_captures']}** "
                     f"({leg3.get('capture_span', ['—', '—'])[0]} →)"
                 )
                 for comp in leg3["comparisons"]:
@@ -196,6 +207,21 @@ def show() -> None:
                 ),
                 hide_index=True,
                 width="stretch",
+            )
+        mf = live.get("model_forecasts")
+        if mf and mf.get("scored_windows"):
+            st.markdown("**This project's forecasts, matured so far**")
+            m1, m2, m3 = st.columns(3)
+            m1.metric("Forecasts with matured windows", f"{mf['n_forecasts']:,}")
+            m2.metric("Windows scored", f"{mf['scored_windows']:,}")
+            m3.metric(
+                "Model MAE (all horizons)",
+                "—" if mf["overall_mae"] is None else f"{mf['overall_mae']}",
+            )
+            st.caption(
+                "Same maturation protocol as the capture scoring above, but a "
+                "different and still small sample, so the two MAE figures are "
+                "not directly comparable yet."
             )
         st.caption(f"Last self-scoring run: {live['updated_utc']}")
     else:

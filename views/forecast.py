@@ -190,6 +190,12 @@ def show() -> None:
             f"{issued_op}, shown for comparison. Values are attributed emissions "
             "under NESO's methodology, not metered or marginal."
         )
+        st.caption(
+            "Intensity typically swings a factor of two within a day, so "
+            "flexible load — EV charging, heating, batch compute — emits "
+            "less when timed into the cleanest windows. The band states how "
+            "much confidence each timing call deserves."
+        )
     elif region_id is None:
         st.caption(
             f"NESO forward forecast issued {issued_op}. The model forecast will "

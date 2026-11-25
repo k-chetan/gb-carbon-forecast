@@ -56,6 +56,10 @@ st.markdown(
         border-radius: 14px;
     }}
 
+    /* the delta slot is used for plain labels, so the arrow means nothing */
+    [data-testid="stMetricDeltaIcon-Up"],
+    [data-testid="stMetricDeltaIcon-Down"] {{ display: none; }}
+
     div.stButton > button {{
         border-radius: 999px;
         border: 1px solid {common.BORDER};
@@ -142,11 +146,17 @@ try:
         delta_color="off",
     )
     window = now_window.get("to", "")
-    kpi2.metric("Settlement window ends", window.replace("T", " ").replace("Z", " UTC"))
+    kpi2.metric(
+        "Settlement window ends",
+        f"{window[11:16]} UTC" if len(window) >= 16 else window,
+        delta=window[:10],
+        delta_color="off",
+    )
     model_live = common.load_json("forecasts/latest.json")
+    served = "Track B" if model_live and "trackB" in model_live["model"] else "Track A"
     kpi3.metric(
         "Served model",
-        model_live["model"].split("_")[0] if model_live else "in training",
+        served if model_live else "in training",
         delta="post-evaluation refit" if model_live else "sealed eval first",
         delta_color="off",
     )

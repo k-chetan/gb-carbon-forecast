@@ -1,0 +1,31 @@
+name: keepalive-visit
+
+on:
+  schedule:
+    # two real browser visits a day: the hosting platform's sleep policy
+    # counts visits, not repository activity
+    - cron: "13 9 * * *"
+    - cron: "13 21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: keepalive-visit
+
+jobs:
+  visit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v5
+
+      - run: uv sync --locked --group report
+
+      - run: uv run playwright install --with-deps chromium
+
+      - name: Visit the app, waking it if needed
+        run: uv run python scripts/keepalive_visit.py
